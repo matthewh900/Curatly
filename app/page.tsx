@@ -6,30 +6,50 @@ import { supabase } from "@/lib/supabaseClient";
 
 export default function HomePage() {
   const [user, setUser] = useState<any>(null);
+  const [displayName, setDisplayName] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const { data, error } = await supabase.auth.getUser();
-      if (data?.user) {
-        setUser(data.user);
+    const fetchUserAndProfile = async () => {
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+  
+      const currentUser = authData?.user;
+  
+      if (currentUser) {
+        setUser(currentUser);
+  
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("id", currentUser.id)
+          .maybeSingle();
+  
+        if (profile?.display_name) {
+          setDisplayName(profile.display_name);
+        }
       }
     };
-
-    fetchUser();
-
-    // Optional: subscribe to auth changes
+  
+    fetchUserAndProfile();
+  
+    // Listen for auth state changes
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      if (session?.user) {
+        setUser(session.user);
+      } else {
+        setUser(null);
+        setDisplayName(null);
+      }
     });
-
+  
     return () => {
       listener.subscription.unsubscribe();
     };
-  }, []);
+  }, []);  
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    setDisplayName(null);
   };
 
   return (
@@ -38,7 +58,7 @@ export default function HomePage() {
 
       {user ? (
         <>
-          <p>Hello, {user.email}!</p>
+          <p>Hello, {displayName ?? user.email}!</p>
           <Link href="/profile">
             <button style={{ marginRight: 10 }}>Go to Profile</button>
           </Link>
