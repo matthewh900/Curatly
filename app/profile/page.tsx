@@ -100,6 +100,9 @@ export default function ProfilePage() {
       <button onClick={handleSave} disabled={saving} style={{ width: "100%" }}>
         {saving ? "Saving..." : "Save Display Name"}
       </button>
+
+      {/* have link to favourites page here, shows all favourited items */}
+      {/* have link to exhibitions page here */}
     </main>
   );
 }

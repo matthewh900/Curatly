@@ -1,0 +1,2 @@
+// exhibition page will show data from the items chosen by the userAgent, for expandNextJsTemplate, images, bio, date discovered/created, etc
+// maybe allow users to be creative with exhibitions by putting items in different section, organising by date/location etc

@@ -75,6 +75,11 @@ export default function HomePage() {
           </Link>
         </>
       )}
+
+      {/* put a grid here filled with artworks/antiquities brought in using the api's */}
+      {/* the api's I plan to use are met museum of art api and the art institute of chicago api */}
+      {/* allow users to filter by things such as country/city of origin, departments etc */}
+      {/* allow users to search for artworks based on location, title, and if the search query is contained within the objects data */}
     </main>
   );
 }
