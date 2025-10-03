@@ -9,6 +9,7 @@ import {
   Artwork,
   Department,
 } from "@/lib/api/met";
+import FavoriteButton from "@/lib/components/favouriteButton";
 
 export default function HomePage() {
   // Auth states
@@ -42,13 +43,15 @@ export default function HomePage() {
 
     fetchUserAndProfile();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) setUser(session.user);
-      else {
-        setUser(null);
-        setDisplayName(null);
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (session?.user) setUser(session.user);
+        else {
+          setUser(null);
+          setDisplayName(null);
+        }
       }
-    });
+    );
 
     return () => listener.subscription.unsubscribe();
   }, []);
@@ -72,7 +75,7 @@ export default function HomePage() {
     setLoading(true);
     setError(null);
     try {
-      const searchTerm = query.trim() || 'art'
+      const searchTerm = query.trim() || "art";
       const ids = await searchArtworks(searchTerm, departmentId ?? undefined);
       if (ids.length === 0) {
         setArtworks([]);
@@ -108,15 +111,25 @@ export default function HomePage() {
       <section style={{ textAlign: "center", marginBottom: 20 }}>
         {user ? (
           <>
-            <p>Hello, <strong>{displayName ?? user.email}</strong>!</p>
-            <Link href="/profile"><button style={buttonStyle}>Go to Profile</button></Link>
-            <button style={buttonStyle} onClick={handleLogout}>Logout</button>
+            <p>
+              Hello, <strong>{displayName ?? user.email}</strong>!
+            </p>
+            <Link href="/profile">
+              <button style={buttonStyle}>Go to Profile</button>
+            </Link>
+            <button style={buttonStyle} onClick={handleLogout}>
+              Logout
+            </button>
           </>
         ) : (
           <>
             <p>You are not logged in.</p>
-            <Link href="/login"><button style={buttonStyle}>Login</button></Link>
-            <Link href="/signup"><button style={buttonStyle}>Sign Up</button></Link>
+            <Link href="/login">
+              <button style={buttonStyle}>Login</button>
+            </Link>
+            <Link href="/signup">
+              <button style={buttonStyle}>Sign Up</button>
+            </Link>
           </>
         )}
       </section>
@@ -127,7 +140,13 @@ export default function HomePage() {
           e.preventDefault();
           loadArtworks();
         }}
-        style={{ display: "flex", gap: 10, marginBottom: 20, justifyContent: "center", flexWrap: "wrap" }}
+        style={{
+          display: "flex",
+          gap: 10,
+          marginBottom: 20,
+          justifyContent: "center",
+          flexWrap: "wrap",
+        }}
       >
         <input
           type="text"
@@ -155,39 +174,64 @@ export default function HomePage() {
           ))}
         </select>
 
-        <button type="submit" style={buttonStyle}>Search</button>
+        <button type="submit" style={buttonStyle}>
+          Search
+        </button>
       </form>
 
       {/* Loading/Error */}
       {loading && <p style={{ textAlign: "center" }}>Loading artworks...</p>}
       {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
-      {!loading && artworks.length === 0 && <p style={{ textAlign: "center" }}>No artworks found.</p>}
+      {!loading && artworks.length === 0 && (
+        <p style={{ textAlign: "center" }}>No artworks found.</p>
+      )}
 
       {/* Artworks */}
-      <section style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-        gap: 15,
-      }}>
+      <section
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+          gap: 15,
+        }}
+      >
         {artworks.map((art) => (
-          <article key={art.objectID} style={{
-            border: "1px solid #ddd",
-            borderRadius: 4,
-            padding: 10,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            textAlign: "center",
-          }}>
+          <article
+            key={art.objectID}
+            style={{
+              border: "1px solid #ddd",
+              borderRadius: 4,
+              padding: 10,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              textAlign: "center",
+            }}
+          >
             {art.primaryImageSmall ? (
-              <img src={art.primaryImageSmall} alt={art.title} style={{
-                width: "100%", height: 140, objectFit: "cover", borderRadius: 4
-              }} loading="lazy" />
+              <img
+                src={art.primaryImageSmall}
+                alt={art.title}
+                style={{
+                  width: "100%",
+                  height: 140,
+                  objectFit: "cover",
+                  borderRadius: 4,
+                }}
+                loading="lazy"
+              />
             ) : (
-              <div style={{
-                width: "100%", height: 140, backgroundColor: "#eee", borderRadius: 4,
-                display: "flex", alignItems: "center", justifyContent: "center", color: "#999"
-              }}>
+              <div
+                style={{
+                  width: "100%",
+                  height: 140,
+                  backgroundColor: "#eee",
+                  borderRadius: 4,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#999",
+                }}
+              >
                 No Image
               </div>
             )}
@@ -195,11 +239,23 @@ export default function HomePage() {
             <p style={{ fontSize: 14, margin: "0 0 4px", color: "#555" }}>
               {art.artistDisplayName || "Unknown Artist"}
             </p>
-            <p style={{ fontSize: 12, margin: 0, color: "#777" }}>{art.objectDate}</p>
-            <a href={art.objectURL} target="_blank" rel="noopener noreferrer"
-              style={{ marginTop: 8, fontSize: 12, color: "#0070f3", textDecoration: "none" }}>
+            <p style={{ fontSize: 12, margin: 0, color: "#777" }}>
+              {art.objectDate}
+            </p>
+            <a
+              href={art.objectURL}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                marginTop: 8,
+                fontSize: 12,
+                color: "#0070f3",
+                textDecoration: "none",
+              }}
+            >
               View on Met Museum
             </a>
+            {user && <FavoriteButton artwork={art} userId={user?.id} />}
           </article>
         ))}
       </section>

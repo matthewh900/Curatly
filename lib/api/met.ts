@@ -6,19 +6,19 @@ export interface Artwork {
   objectID: number;
   title: string;
   artistDisplayName: string;
-  artistDisplayBio: string;
-  objectDate: string;
-  medium: string;
+  artistDisplayBio?: string;
+  objectDate?: string;
+  medium?: string;
   department: string;
-  culture: string;
-  primaryImage: string; // Full-size image URL
+  culture?: string;
+  primaryImage?: string; // Full-size image URL
   primaryImageSmall: string; // Thumbnail/smaller image URL
-  additionalImages: string[]; // Other images URLs
+  additionalImages?: string[]; // Other images URLs
   objectURL: string; // Link to Met Museum page
-  creditLine: string; // Credit info (e.g. gift, purchase)
-  dimensions: string;
-  classification: string;
-  repository: string;
+  creditLine?: string; // Credit info (e.g. gift, purchase)
+  dimensions?: string;
+  classification?: string;
+  repository?: string;
 }
 
 export interface ArtworkFilter {
