@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import {
-  searchArtworks,
-  getArtworksByIds,
   Artwork,
   Department,
 } from "@/lib/api/met";
@@ -24,6 +22,11 @@ export default function HomePage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 20;
 
   // Fetch user profile
   useEffect(() => {
@@ -70,20 +73,36 @@ export default function HomePage() {
     fetchDepartments();
   }, []);
 
-  // Load artworks
-  const loadArtworks = async () => {
+  // Load artworks with pagination
+  const loadArtworks = async (page = 1) => {
     setLoading(true);
     setError(null);
+
     try {
       const searchTerm = query.trim() || "art";
-      const ids = await searchArtworks(searchTerm, departmentId ?? undefined);
-      if (ids.length === 0) {
-        setArtworks([]);
-        setLoading(false);
-        return;
+
+      const params = new URLSearchParams({
+        query: searchTerm,
+        page: page.toString(),
+        limit: itemsPerPage.toString(),
+      });
+
+      if (departmentId) {
+        params.append("departmentId", departmentId.toString());
       }
-      const fetchedArtworks = await getArtworksByIds(ids, 20);
-      setArtworks(fetchedArtworks);
+
+      const res = await fetch(`/api/artworks?${params.toString()}`);
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "Unknown error");
+
+      setArtworks(data.artworks);
+      setTotalPages(data.totalPages);
+      setCurrentPage(data.page);
+
+      // Scroll to top after loading
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
     } catch (err) {
       console.error("Artwork loading error:", err);
       setError("Failed to load artworks. Please try again.");
@@ -94,7 +113,7 @@ export default function HomePage() {
 
   // Load on first render
   useEffect(() => {
-    loadArtworks();
+    loadArtworks(1);
   }, []);
 
   const handleLogout = async () => {
@@ -104,11 +123,11 @@ export default function HomePage() {
   };
 
   return (
-    <main style={{ maxWidth: 700, margin: "2rem auto", padding: "0 1rem" }}>
-      <h1 style={{ textAlign: "center" }}>Welcome to Curatly</h1>
+    <main style={mainStyle}>
+      <h1 style={centeredTextStyle}>Welcome to Curatly</h1>
 
       {/* Auth */}
-      <section style={{ textAlign: "center", marginBottom: 20 }}>
+      <section style={centeredSectionStyle}>
         {user ? (
           <>
             <p>
@@ -138,15 +157,9 @@ export default function HomePage() {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          loadArtworks();
+          loadArtworks(1);
         }}
-        style={{
-          display: "flex",
-          gap: 10,
-          marginBottom: 20,
-          justifyContent: "center",
-          flexWrap: "wrap",
-        }}
+        style={searchFormStyle}
       >
         <input
           type="text"
@@ -162,6 +175,7 @@ export default function HomePage() {
           onChange={(e) => {
             const value = e.target.value;
             setDepartmentId(value === "" ? null : Number(value));
+            loadArtworks(1);
           }}
           style={inputStyle}
           aria-label="Filter by department"
@@ -180,78 +194,36 @@ export default function HomePage() {
       </form>
 
       {/* Loading/Error */}
-      {loading && <p style={{ textAlign: "center" }}>Loading artworks...</p>}
-      {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
+      {loading && <p style={centeredTextStyle}>Loading artworks...</p>}
+      {error && <p style={errorStyle}>{error}</p>}
       {!loading && artworks.length === 0 && (
-        <p style={{ textAlign: "center" }}>No artworks found.</p>
+        <p style={centeredTextStyle}>No artworks found.</p>
       )}
 
       {/* Artworks */}
-      <section
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-          gap: 15,
-        }}
-      >
+      <section style={gridStyle}>
         {artworks.map((art) => (
-          <article
-            key={art.objectID}
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: 4,
-              padding: 10,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              textAlign: "center",
-            }}
-          >
+          <article key={art.objectID} style={artCardStyle}>
             {art.primaryImageSmall ? (
               <img
                 src={art.primaryImageSmall}
                 alt={art.title}
-                style={{
-                  width: "100%",
-                  height: 140,
-                  objectFit: "cover",
-                  borderRadius: 4,
-                }}
+                style={artImageStyle}
                 loading="lazy"
               />
             ) : (
-              <div
-                style={{
-                  width: "100%",
-                  height: 140,
-                  backgroundColor: "#eee",
-                  borderRadius: 4,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#999",
-                }}
-              >
-                No Image
-              </div>
+              <div style={imagePlaceholderStyle}>No Image</div>
             )}
-            <h3 style={{ fontSize: 16, margin: "10px 0 4px" }}>{art.title}</h3>
-            <p style={{ fontSize: 14, margin: "0 0 4px", color: "#555" }}>
+            <h3 style={artTitleStyle}>{art.title}</h3>
+            <p style={artArtistStyle}>
               {art.artistDisplayName || "Unknown Artist"}
             </p>
-            <p style={{ fontSize: 12, margin: 0, color: "#777" }}>
-              {art.objectDate}
-            </p>
+            <p style={artDateStyle}>{art.objectDate}</p>
             <a
               href={art.objectURL}
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                marginTop: 8,
-                fontSize: 12,
-                color: "#0070f3",
-                textDecoration: "none",
-              }}
+              style={linkStyle}
             >
               View on Met Museum
             </a>
@@ -259,9 +231,51 @@ export default function HomePage() {
           </article>
         ))}
       </section>
+
+      {/* Pagination controls */}
+      {totalPages > 1 && (
+        <div style={paginationStyle}>
+          <button
+            onClick={() => loadArtworks(currentPage - 1)}
+            disabled={currentPage === 1}
+            style={{ ...buttonStyle, marginRight: 10 }}
+          >
+            Previous
+          </button>
+
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+
+          <button
+            onClick={() => loadArtworks(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            style={{ ...buttonStyle, marginLeft: 10 }}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </main>
   );
 }
+
+/* ---------- 🧼 Reusable Styles Below ---------- */
+
+const mainStyle: React.CSSProperties = {
+  maxWidth: 700,
+  margin: "2rem auto",
+  padding: "0 1rem",
+};
+
+const centeredTextStyle: React.CSSProperties = {
+  textAlign: "center",
+};
+
+const centeredSectionStyle: React.CSSProperties = {
+  ...centeredTextStyle,
+  marginBottom: 20,
+};
 
 const buttonStyle: React.CSSProperties = {
   padding: "8px 16px",
@@ -278,4 +292,80 @@ const inputStyle: React.CSSProperties = {
   borderRadius: 4,
   border: "1px solid #ccc",
   width: 180,
+};
+
+const searchFormStyle: React.CSSProperties = {
+  display: "flex",
+  gap: 10,
+  marginBottom: 20,
+  justifyContent: "center",
+  flexWrap: "wrap",
+};
+
+const gridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+  gap: 15,
+};
+
+const artCardStyle: React.CSSProperties = {
+  border: "1px solid #ddd",
+  borderRadius: 4,
+  padding: 10,
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  textAlign: "center",
+};
+
+const artImageStyle: React.CSSProperties = {
+  width: "100%",
+  height: 140,
+  objectFit: "cover",
+  borderRadius: 4,
+};
+
+const imagePlaceholderStyle: React.CSSProperties = {
+  width: "100%",
+  height: 140,
+  backgroundColor: "#eee",
+  borderRadius: 4,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  color: "#999",
+};
+
+const artTitleStyle: React.CSSProperties = {
+  fontSize: 16,
+  margin: "10px 0 4px",
+};
+
+const artArtistStyle: React.CSSProperties = {
+  fontSize: 14,
+  margin: "0 0 4px",
+  color: "#555",
+};
+
+const artDateStyle: React.CSSProperties = {
+  fontSize: 12,
+  margin: 0,
+  color: "#777",
+};
+
+const linkStyle: React.CSSProperties = {
+  marginTop: 8,
+  fontSize: 12,
+  color: "#0070f3",
+  textDecoration: "none",
+};
+
+const errorStyle: React.CSSProperties = {
+  color: "red",
+  textAlign: "center",
+};
+
+const paginationStyle: React.CSSProperties = {
+  textAlign: "center",
+  marginTop: 20,
 };

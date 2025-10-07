@@ -22,10 +22,7 @@ export interface Artwork {
 }
 
 export interface ArtworkFilter {
-  medium?: string;
   department?: string;
-  culture?: string;
-  artist?: string;
 }
 
 export interface Department {
@@ -55,9 +52,9 @@ export async function getArtworkById(id: number): Promise<Artwork | null> {
 // get multiple artworks by given array of numbers
 export async function getArtworksByIds(
   ids: number[],
-  limit = 10
+  limit?: number  // make limit optional, but use when provided
 ): Promise<Artwork[]> {
-  const limitedIds = ids.slice(0, limit);
+  const limitedIds = typeof limit === "number" ? ids.slice(0, limit) : ids;
 
   const results = await Promise.allSettled(
     limitedIds.map((id) => getArtworkById(id))
@@ -71,29 +68,30 @@ export async function getArtworksByIds(
     .map((r) => r.value as Artwork);
 }
 
+
 // filter artworks
 export function filterArtworks(
   artworks: Artwork[],
   filters: ArtworkFilter
 ): Artwork[] {
   return artworks.filter((art) => {
-    const { medium, department, culture, artist } = filters;
+    const { department } = filters;
 
-    const matchesMedium = medium
-      ? art.medium?.toLowerCase().includes(medium.toLowerCase())
-      : true;
+    // const matchesMedium = medium
+    //   ? art.medium?.toLowerCase().includes(medium.toLowerCase())
+    //   : true;
     const matchesDepartment = department
       ? art.department?.toLowerCase() === department.toLowerCase()
       : true;
-    const matchesCulture = culture
-      ? art.culture?.toLowerCase().includes(culture.toLowerCase())
-      : true;
-    const matchesArtist = artist
-      ? art.artistDisplayName?.toLowerCase().includes(artist.toLowerCase())
-      : true;
+    // const matchesCulture = culture
+    //   ? art.culture?.toLowerCase().includes(culture.toLowerCase())
+    //   : true;
+    // const matchesArtist = artist
+    //   ? art.artistDisplayName?.toLowerCase().includes(artist.toLowerCase())
+    //   : true;
 
     return (
-      matchesMedium && matchesDepartment && matchesCulture && matchesArtist
+       matchesDepartment 
     );
   });
 }
@@ -112,8 +110,10 @@ export async function searchArtworks(
   }
 
   const res = await fetch(url);
+
   if (!res.ok) {
-    throw new Error(`Failed to search artworks with query: "${query}"`);
+    console.warn(`Search failed with status ${res.status}: ${url}`);
+    return []; // gracefully handle bad search response
   }
 
   const data = (await res.json()) as {
@@ -121,8 +121,10 @@ export async function searchArtworks(
     objectIDs: number[] | null;
   };
 
-  return data.objectIDs ? data.objectIDs.slice(0, 100) : [];
+  // Return an empty array instead of null
+  return Array.isArray(data.objectIDs) ? data.objectIDs : [];
 }
+
 
 // fetch departments
 export async function getDepartments(): Promise<Department[]> {
