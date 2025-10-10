@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import Link from "next/link";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -13,10 +14,11 @@ export default function ProfilePage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [exhibitions, setExhibitions] = useState<any[]>([]);
 
-  // Fetch user and profile
+  // Fetch user profile & exhibitions
   useEffect(() => {
-    const getProfile = async () => {
+    const getProfileAndExhibitions = async () => {
       setLoading(true);
 
       const {
@@ -31,6 +33,7 @@ export default function ProfilePage() {
 
       setUserId(user.id);
 
+      // Fetch profile
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("display_name")
@@ -44,10 +47,23 @@ export default function ProfilePage() {
         setDisplayName(profile.display_name);
       }
 
+      // Fetch exhibitions
+      const { data: exhibitionsData, error: exhibitionsError } = await supabase
+        .from("exhibitions")
+        .select("id, name, description")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (exhibitionsError) {
+        console.error("Error loading exhibitions:", exhibitionsError);
+      } else {
+        setExhibitions(exhibitionsData || []);
+      }
+
       setLoading(false);
     };
 
-    getProfile();
+    getProfileAndExhibitions();
   }, [router]);
 
   const handleSave = async () => {
@@ -71,7 +87,7 @@ export default function ProfilePage() {
       setErrorMsg("Failed to update display name.");
     } else {
       setSuccessMsg("Display name updated successfully.");
-      router.push("/")
+      router.push("/");
     }
 
     setSaving(false);
@@ -101,8 +117,38 @@ export default function ProfilePage() {
         {saving ? "Saving..." : "Save Display Name"}
       </button>
 
-      {/* have link to favourites page here, shows all favourited items */}
-      {/* have link to exhibitions page here */}
+      {/* Exhibitions Section */}
+      <section style={{ marginTop: "3rem" }}>
+        <h2>Your Exhibitions</h2>
+
+        {exhibitions.length === 0 ? (
+          <p>You haven't created any exhibitions yet.</p>
+        ) : (
+          <ul style={{ listStyle: "none", padding: 0 }}>
+            {exhibitions.map((exhibition) => (
+              <li
+                key={exhibition.id}
+                style={{
+                  border: "1px solid #ddd",
+                  borderRadius: 4,
+                  padding: "1rem",
+                  marginBottom: "1rem",
+                }}
+              >
+                <Link
+                  href={`/exhibitions/${exhibition.id}`}
+                  style={{ textDecoration: "none", color: "inherit" }}
+                >
+                  <h3 style={{ margin: "0 0 0.5rem" }}>{exhibition.name}</h3>
+                  <p style={{ margin: 0, color: "#555" }}>
+                    {exhibition.description || "No description provided."}
+                  </p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </main>
   );
 }
