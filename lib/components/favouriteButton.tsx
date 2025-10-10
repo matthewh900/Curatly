@@ -4,49 +4,49 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Artwork } from '../api/met';
 
-type FavoriteButtonProps = {
+type FavouriteButtonProps = {
   artwork: Artwork;
   userId: string | null;
 };
 
-export default function FavoriteButton({ artwork, userId }: FavoriteButtonProps) {
-  const [isFavorited, setIsFavorited] = useState(false);
+export default function FavouriteButton({ artwork, userId }: FavouriteButtonProps) {
+  const [isFavourited, setIsFavourited] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
-    const checkFavorite = async () => {
+    const checkFavourite = async () => {
       const { data, error } = await supabase
-        .from('favorites')
+        .from('favourites')
         .select('id')
         .eq('user_id', userId)
         .eq('object_id', artwork.objectID)
         .maybeSingle();
 
-      if (data) setIsFavorited(true);
+      if (data) setIsFavourited(true);
     };
-    checkFavorite();
+    checkFavourite();
   }, [userId, artwork.objectID]);
 
-  const handleToggleFavorite = async () => {
+  const handleToggleFavourite = async () => {
     if (!userId) {
-      alert('Please log in to favorite artworks.');
+      alert('Please log in to favourite artworks.');
       return;
     }
 
     setLoading(true);
 
-    if (isFavorited) {
-      // Optional: allow unfavoriting
+    if (isFavourited) {
+      // Optional: allow unfavouriting
       const { error } = await supabase
-        .from('favorites')
+        .from('favourites')
         .delete()
         .eq('user_id', userId)
         .eq('object_id', artwork.objectID);
 
-      if (!error) setIsFavorited(false);
+      if (!error) setIsFavourited(false);
     } else {
-      const { error } = await supabase.from('favorites').insert({
+      const { error } = await supabase.from('favourites').insert({
         user_id: userId,
         object_id: artwork.objectID,
         title: artwork.title,
@@ -55,7 +55,7 @@ export default function FavoriteButton({ artwork, userId }: FavoriteButtonProps)
         object_url: artwork.objectURL,
       });
 
-      if (!error) setIsFavorited(true);
+      if (!error) setIsFavourited(true);
     }
 
     setLoading(false);
@@ -63,20 +63,20 @@ export default function FavoriteButton({ artwork, userId }: FavoriteButtonProps)
 
   return (
     <button
-      onClick={handleToggleFavorite}
+      onClick={handleToggleFavourite}
       disabled={loading}
-      aria-label={isFavorited ? 'Unfavorite' : 'Favorite'}
+      aria-label={isFavourited ? 'Unfavourite' : 'Favourite'}
       style={{
         background: 'none',
         border: 'none',
         cursor: 'pointer',
         fontSize: 20,
         marginTop: 8,
-        color: isFavorited ? 'red' : '#aaa',
+        color: isFavourited ? 'red' : '#aaa',
         transition: 'color 0.2s',
       }}
     >
-      {isFavorited ? '♥︎' : '♡'}
+      {isFavourited ? '♥︎' : '♡'}
     </button>
   );
 }
