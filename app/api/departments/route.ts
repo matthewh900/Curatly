@@ -1,3 +1,4 @@
+// app > api > departments > route.ts
 import { NextResponse } from "next/server";
 import { getDepartments } from "@/lib/api/met";
 

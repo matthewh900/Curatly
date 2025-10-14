@@ -1,3 +1,4 @@
+// app > api > artworks > route.ts
 import { NextResponse } from "next/server";
 import { searchArtworks, getArtworksByIds } from "@/lib/api/met";
 
@@ -69,4 +70,3 @@ export async function GET(request: Request) {
     );
   }
 }
-

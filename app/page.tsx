@@ -8,6 +8,7 @@ import {
   Department,
 } from "@/lib/api/met";
 import FavoriteButton from "@/lib/components/favouriteButton";
+import ArtworkCard from "@/lib/components/artworkCard";
 
 export default function HomePage() {
   // Auth states
@@ -203,32 +204,7 @@ export default function HomePage() {
       {/* Artworks */}
       <section style={gridStyle}>
         {artworks.map((art) => (
-          <article key={art.objectID} style={artCardStyle}>
-            {art.primaryImageSmall ? (
-              <img
-                src={art.primaryImageSmall}
-                alt={art.title}
-                style={artImageStyle}
-                loading="lazy"
-              />
-            ) : (
-              <div style={imagePlaceholderStyle}>No Image</div>
-            )}
-            <h3 style={artTitleStyle}>{art.title}</h3>
-            <p style={artArtistStyle}>
-              {art.artistDisplayName || "Unknown Artist"}
-            </p>
-            <p style={artDateStyle}>{art.objectDate}</p>
-            <a
-              href={art.objectURL}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={linkStyle}
-            >
-              View on Met Museum
-            </a>
-            {user && <FavoriteButton artwork={art} userId={user?.id} />}
-          </article>
+          <ArtworkCard key={art.objectID} artwork={art} userId={user?.id ?? null} />
         ))}
       </section>
 
@@ -260,7 +236,7 @@ export default function HomePage() {
   );
 }
 
-/* ---------- 🧼 Reusable Styles Below ---------- */
+/* Reusable Styles Below */
 
 const mainStyle: React.CSSProperties = {
   maxWidth: 700,
@@ -306,58 +282,6 @@ const gridStyle: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
   gap: 15,
-};
-
-const artCardStyle: React.CSSProperties = {
-  border: "1px solid #ddd",
-  borderRadius: 4,
-  padding: 10,
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  textAlign: "center",
-};
-
-const artImageStyle: React.CSSProperties = {
-  width: "100%",
-  height: 140,
-  objectFit: "cover",
-  borderRadius: 4,
-};
-
-const imagePlaceholderStyle: React.CSSProperties = {
-  width: "100%",
-  height: 140,
-  backgroundColor: "#eee",
-  borderRadius: 4,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  color: "#999",
-};
-
-const artTitleStyle: React.CSSProperties = {
-  fontSize: 16,
-  margin: "10px 0 4px",
-};
-
-const artArtistStyle: React.CSSProperties = {
-  fontSize: 14,
-  margin: "0 0 4px",
-  color: "#555",
-};
-
-const artDateStyle: React.CSSProperties = {
-  fontSize: 12,
-  margin: 0,
-  color: "#777",
-};
-
-const linkStyle: React.CSSProperties = {
-  marginTop: 8,
-  fontSize: 12,
-  color: "#0070f3",
-  textDecoration: "none",
 };
 
 const errorStyle: React.CSSProperties = {

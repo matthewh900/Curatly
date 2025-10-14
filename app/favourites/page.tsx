@@ -6,10 +6,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { Artwork } from "@/lib/api/met";
-import FavouriteButton from "@/lib/components/favouriteButton";
 import AddToExhibitionButton from "@/lib/components/addToExhibitionsButton";
+import ArtworkCard from "@/lib/components/artworkCard";
 
-interface FavouritedArtwork extends Artwork {
+export interface FavouritedArtwork extends Artwork {
   favouriteId: string;
 }
 
@@ -77,75 +77,12 @@ export default function FavouritesPage() {
           }}
         >
           {favourites.map((art) => (
-            <article
-              key={art.objectID}
-              style={{
-                border: "1px solid #ddd",
-                borderRadius: 4,
-                padding: 10,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                textAlign: "center",
-              }}
-            >
-              {art.primaryImageSmall ? (
-                <img
-                  src={art.primaryImageSmall}
-                  alt={art.title}
-                  style={{
-                    width: "100%",
-                    height: 140,
-                    objectFit: "cover",
-                    borderRadius: 4,
-                  }}
-                  loading="lazy"
-                />
-              ) : (
-                <div
-                  style={{
-                    width: "100%",
-                    height: 140,
-                    backgroundColor: "#eee",
-                    borderRadius: 4,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#999",
-                  }}
-                >
-                  No Image
-                </div>
-              )}
-
-              <h3 style={{ fontSize: 16, margin: "10px 0 4px" }}>
-                {art.title}
-              </h3>
-              <p style={{ fontSize: 14, margin: "0 0 4px", color: "#555" }}>
-                {art.artistDisplayName || "Unknown Artist"}
-              </p>
-              <a
-                href={art.objectURL}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  marginTop: 8,
-                  fontSize: 12,
-                  color: "#0070f3",
-                  textDecoration: "none",
-                }}
-              >
-                View on Met Museum
-              </a>
-
-              <FavouriteButton artwork={art} userId={userId} />
-              {userId && (
-                <AddToExhibitionButton
-                  favouriteId={art.favouriteId}
-                  userId={userId}
-                />
-              )}
-            </article>
+            <ArtworkCard key={art.objectID} artwork={art} userId={userId}>
+            {userId && <AddToExhibitionButton
+              favouriteId={art.favouriteId}
+              userId={userId}
+            />}
+          </ArtworkCard>          
           ))}
         </section>
       )}
