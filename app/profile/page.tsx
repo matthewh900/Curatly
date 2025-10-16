@@ -117,6 +117,31 @@ export default function ProfilePage() {
         {saving ? "Saving..." : "Save Display Name"}
       </button>
 
+      {/* Favourites Link Section */}
+      <section style={{ marginTop: "3rem" }}>
+        <h2>Your Favourites</h2>
+        <ul style={{ listStyle: "none", padding: 0 }}>
+          <li
+            style={{
+              border: "1px solid #ddd",
+              borderRadius: 4,
+              padding: "1rem",
+              marginBottom: "1rem",
+            }}
+          >
+            <Link
+              href="/favourites"
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              <h3 style={{ margin: 0 }}>View Your Favourites</h3>
+              <p style={{ margin: 0, color: "#555" }}>
+                Browse all the artworks you've favourited.
+              </p>
+            </Link>
+          </li>
+        </ul>
+      </section>
+
       {/* Exhibitions Section */}
       <section style={{ marginTop: "3rem" }}>
         <h2>Your Exhibitions</h2>

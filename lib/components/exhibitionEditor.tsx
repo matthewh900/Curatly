@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import ArtworkCard from "@/lib/components/artworkCard";
+import RemoveFromExhibitionButton from "@/lib/components/removeFromExhibitionButton";
 import { ExhibitionArtwork } from "@/app/exhibitions/[id]/page";
 
 interface ExhibitionEditorProps {
@@ -16,13 +17,15 @@ interface ExhibitionEditorProps {
 
 export default function ExhibitionEditor({
   exhibition,
-  artworks,
+  artworks: initialArtworks,
 }: ExhibitionEditorProps) {
   const [name, setName] = useState(exhibition.name);
   const [description, setDescription] = useState(exhibition.description || "");
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const [artworks, setArtworks] = useState(initialArtworks);
 
   const handleSave = async () => {
     setSaving(true);
@@ -90,9 +93,19 @@ export default function ExhibitionEditor({
                 artistDisplayName: artwork.artist,
                 primaryImageSmall: artwork.image_url,
                 objectURL: artwork.object_url,
-                department: "", // Add if needed
+                department: "",
               }}
-            />
+            >
+              <RemoveFromExhibitionButton
+                exhibitionId={exhibition.id}
+                favouriteId={artwork.id}
+                onRemoved={() =>
+                  setArtworks((prev) =>
+                    prev.filter((a) => a.id !== artwork.id)
+                  )
+                }
+              />
+            </ArtworkCard>
           ))
         )}
       </section>
@@ -156,6 +169,6 @@ const styles: { [key: string]: React.CSSProperties } = {
   artworksSection: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-    gap: "1rem",
+    gap: "1.5rem",
   },
 };
