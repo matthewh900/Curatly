@@ -1,11 +1,11 @@
 "use client";
 
 import React from "react";
-import { Artwork } from "@/lib/api/met";
+import { UnifiedArtwork } from "../types/unifiedArtwork";
 import FavouriteButton from "@/lib/components/favouriteButton";
 
 interface ArtworkCardProps {
-  artwork: Artwork;
+  artwork: UnifiedArtwork;
   userId?: string | null;
   children?: React.ReactNode;
 }
@@ -17,9 +17,9 @@ export default function ArtworkCard({
 }: ArtworkCardProps) {
   return (
     <article style={artCardStyle}>
-      {artwork.primaryImageSmall ? (
+      {artwork.imageUrl ? (
         <img
-          src={artwork.primaryImageSmall}
+          src={artwork.imageUrl}
           alt={artwork.title}
           style={artImageStyle}
           loading="lazy"
@@ -29,20 +29,18 @@ export default function ArtworkCard({
       )}
 
       <h3 style={artTitleStyle}>{artwork.title}</h3>
-      <p style={artArtistStyle}>
-        {artwork.artistDisplayName || "Unknown Artist"}
-      </p>
-      {artwork.objectDate && (
-        <p style={artDateStyle}>{artwork.objectDate}</p>
-      )}
-      {artwork.objectURL && (
+      <p style={artArtistStyle}>{artwork.artist || "Unknown Artist"}</p>
+
+      {artwork.date && <p style={artDateStyle}>{artwork.date}</p>}
+
+      {artwork.artworkUrl && (
         <a
-          href={artwork.objectURL}
+          href={artwork.artworkUrl}
           target="_blank"
           rel="noopener noreferrer"
           style={linkStyle}
         >
-          View on Met Museum
+          View on {artwork.provider === "met" ? "The Met" : "AIC"}
         </a>
       )}
 
@@ -54,7 +52,6 @@ export default function ArtworkCard({
 }
 
 // Styles
-
 const artCardStyle: React.CSSProperties = {
   border: "1px solid #ddd",
   borderRadius: 4,

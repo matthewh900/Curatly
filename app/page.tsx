@@ -3,11 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
-import {
-  Artwork,
-  Department,
-} from "@/lib/api/met";
-import FavoriteButton from "@/lib/components/favouriteButton";
+import { Department } from "@/lib/api/met";
+import { UnifiedArtwork } from "@/lib/types/unifiedArtwork";
 import ArtworkCard from "@/lib/components/artworkCard";
 
 export default function HomePage() {
@@ -16,10 +13,11 @@ export default function HomePage() {
   const [displayName, setDisplayName] = useState<string | null>(null);
 
   // Artworks & filters
-  const [artworks, setArtworks] = useState<Artwork[]>([]);
+  const [artworks, setArtworks] = useState<UnifiedArtwork[]>([]);
   const [query, setQuery] = useState("");
   const [departmentId, setDepartmentId] = useState<number | null>(null);
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [provider, setProvider] = useState<"met" | "aic">("met"); // Add provider state
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,21 +58,26 @@ export default function HomePage() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
-  // Fetch departments
+  // Fetch departments (only relevant for MET)
   useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        const res = await fetch("/api/departments");
-        const data: Department[] = await res.json();
-        setDepartments(data);
-      } catch (err) {
-        console.error("Failed to fetch departments", err);
-      }
-    };
-    fetchDepartments();
-  }, []);
+    if (provider === "met") {
+      const fetchDepartments = async () => {
+        try {
+          const res = await fetch("/api/departments");
+          const data: Department[] = await res.json();
+          setDepartments(data);
+        } catch (err) {
+          console.error("Failed to fetch departments", err);
+        }
+      };
+      fetchDepartments();
+    } else {
+      setDepartments([]); // Clear departments if provider isn't MET
+      setDepartmentId(null); // Reset department filter on provider switch
+    }
+  }, [provider]);
 
-  // Load artworks with pagination
+  // Load artworks with pagination & filters
   const loadArtworks = async (page = 1) => {
     setLoading(true);
     setError(null);
@@ -86,9 +89,10 @@ export default function HomePage() {
         query: searchTerm,
         page: page.toString(),
         limit: itemsPerPage.toString(),
+        provider,
       });
 
-      if (departmentId) {
+      if (provider === "met" && departmentId) {
         params.append("departmentId", departmentId.toString());
       }
 
@@ -97,13 +101,12 @@ export default function HomePage() {
 
       if (!res.ok) throw new Error(data.error || "Unknown error");
 
-      setArtworks(data.artworks);
+      setArtworks(data.artworks); // UnifiedArtwork[]
       setTotalPages(data.totalPages);
       setCurrentPage(data.page);
 
       // Scroll to top after loading
       window.scrollTo({ top: 0, behavior: "smooth" });
-
     } catch (err) {
       console.error("Artwork loading error:", err);
       setError("Failed to load artworks. Please try again.");
@@ -112,10 +115,10 @@ export default function HomePage() {
     }
   };
 
-  // Load on first render
+  // Load on first render & when filters change
   useEffect(() => {
     loadArtworks(1);
-  }, []);
+  }, [provider]); // Reload artworks when provider changes
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -172,22 +175,38 @@ export default function HomePage() {
         />
 
         <select
-          value={departmentId ?? ""}
+          value={provider}
           onChange={(e) => {
-            const value = e.target.value;
-            setDepartmentId(value === "" ? null : Number(value));
-            loadArtworks(1);
+            const val = e.target.value as "met" | "aic";
+            setProvider(val);
           }}
           style={inputStyle}
-          aria-label="Filter by department"
+          aria-label="Select provider"
         >
-          <option value="">All Departments</option>
-          {departments.map((d) => (
-            <option key={d.departmentId} value={d.departmentId}>
-              {d.displayName}
-            </option>
-          ))}
+          <option value="met">Met Museum</option>
+          <option value="aic">Art Institute of Chicago</option>
         </select>
+
+        {/* Show departments only if provider is Met */}
+        {provider === "met" && (
+          <select
+            value={departmentId ?? ""}
+            onChange={(e) => {
+              const value = e.target.value;
+              setDepartmentId(value === "" ? null : Number(value));
+              loadArtworks(1);
+            }}
+            style={inputStyle}
+            aria-label="Filter by department"
+          >
+            <option value="">All Departments</option>
+            {departments.map((d) => (
+              <option key={d.departmentId} value={d.departmentId}>
+                {d.displayName}
+              </option>
+            ))}
+          </select>
+        )}
 
         <button type="submit" style={buttonStyle}>
           Search
@@ -204,7 +223,11 @@ export default function HomePage() {
       {/* Artworks */}
       <section style={gridStyle}>
         {artworks.map((art) => (
-          <ArtworkCard key={art.objectID} artwork={art} userId={user?.id ?? null} />
+          <ArtworkCard
+            key={art.id} // updated to unified artwork id
+            artwork={art}
+            userId={user?.id ?? null}
+          />
         ))}
       </section>
 

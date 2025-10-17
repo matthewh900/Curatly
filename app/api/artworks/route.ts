@@ -1,16 +1,24 @@
 // app > api > artworks > route.ts
 import { NextResponse } from "next/server";
-import { searchArtworks, getArtworksByIds } from "@/lib/api/met";
+import {
+  searchArtworks as searchMetArtworks,
+  getArtworksByIds as getMetArtworksByIds,
+  mapMetToUnified,
+} from "@/lib/api/met";
+import {
+  searchArtworks as searchAICArtworks,
+  mapAICToUnified,
+} from "@/lib/api/artic";
 
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
 
-    // Query parameters
     const query = url.searchParams.get("query") || "art";
     const departmentId = url.searchParams.get("departmentId");
     const page = parseInt(url.searchParams.get("page") || "1", 10);
     const limit = parseInt(url.searchParams.get("limit") || "20", 10);
+    const provider = url.searchParams.get("provider") || "met";
 
     if (page < 1 || limit < 1) {
       return NextResponse.json(
@@ -19,42 +27,42 @@ export async function GET(request: Request) {
       );
     }
 
-    // Get all matching artwork IDs
-    const objectIDs = await searchArtworks(
-      query,
-      departmentId ? Number(departmentId) : undefined
-    );
+    let artworks = [];
+    let total = 0;
+    let totalPages = 0;
 
-    // No results found
-    if (!objectIDs || objectIDs.length === 0) {
-      return NextResponse.json({
-        artworks: [],
-        total: 0,
-        page,
-        totalPages: 0,
-      });
+    if (provider === "met") {
+      // Search Met Museum for object IDs matching query & department
+      const ids = await searchMetArtworks(
+        query,
+        departmentId ? Number(departmentId) : undefined
+      );
+      total = ids.length;
+      totalPages = Math.ceil(total / limit);
+      const startIndex = (page - 1) * limit;
+      const selectedIds = ids.slice(startIndex, startIndex + limit);
+
+      // Fetch full artwork details by IDs
+      const metArtworks = await getMetArtworksByIds(selectedIds);
+
+      // Map Met artworks to unified type
+      artworks = metArtworks.map(mapMetToUnified);
+    } else if (provider === "aic") {
+      // Search AIC API with pagination
+      const aicResponse = await searchAICArtworks(query, page, limit);
+      total = aicResponse.pagination.total;
+      totalPages = aicResponse.pagination.total_pages;
+
+      // Map AIC artworks to unified type using iiif_url from config
+      artworks = aicResponse.data.map((a) =>
+        mapAICToUnified(a, aicResponse.config.iiif_url)
+      );
+    } else {
+      return NextResponse.json(
+        { error: "Invalid provider specified" },
+        { status: 400 }
+      );
     }
-
-    const total = objectIDs.length;
-    const totalPages = Math.ceil(total / limit);
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-
-    // If page is out of range, return empty list
-    if (startIndex >= total) {
-      return NextResponse.json({
-        artworks: [],
-        total,
-        page,
-        totalPages,
-      });
-    }
-
-    // Paginate IDs
-    const paginatedIDs = objectIDs.slice(startIndex, endIndex);
-
-    // Fetch the artworks
-    const artworks = await getArtworksByIds(paginatedIDs);
 
     return NextResponse.json({
       artworks,

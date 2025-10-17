@@ -7,13 +7,13 @@ import { supabaseServer } from "@/lib/supabaseServerClient";
 
 export interface ExhibitionArtwork {
   id: string;
+  provider: "met" | "aic";
   title: string;
   artist: string;
   image_url: string;
-  object_url: string;
+  artwork_url: string;
 }
 
-// Correct `params` usage
 export default async function ExhibitionPage(context: {
   params: Promise<{ id: string }>;
 }) {
@@ -31,7 +31,7 @@ export default async function ExhibitionPage(context: {
     return notFound();
   }
 
-  // Fetch related favourites
+  // Fetch related favourites for this exhibition
   const { data: exhibitionFavourites, error: favouritesError } =
     await supabaseServer
       .from("exhibition_favourites")
@@ -45,14 +45,14 @@ export default async function ExhibitionPage(context: {
 
   const favouriteIds = exhibitionFavourites?.map((f) => f.favourite_id) ?? [];
 
-  // Fetch favourite details
   let artworks: ExhibitionArtwork[] = [];
 
   if (favouriteIds.length > 0) {
+    // Fetch all favourites from favourites table (includes provider info)
     const { data: favourites, error: favouritesDetailsError } =
       await supabaseServer
         .from("favourites")
-        .select("id, title, artist, image_url, object_url")
+        .select("id, provider, title, artist, image_url, artwork_url")
         .in("id", favouriteIds);
 
     if (favouritesDetailsError) {
@@ -60,10 +60,11 @@ export default async function ExhibitionPage(context: {
     } else if (favourites) {
       artworks = favourites.map((f) => ({
         id: String(f.id),
+        provider: f.provider as "met" | "aic", // cast provider
         title: f.title || "Untitled",
         artist: f.artist || "Unknown Artist",
         image_url: f.image_url || "",
-        object_url: f.object_url || "",
+        artwork_url: f.artwork_url || "",
       }));
     }
   }

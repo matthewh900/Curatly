@@ -5,13 +5,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { Artwork } from "@/lib/api/met";
-import AddToExhibitionButton from "@/lib/components/addToExhibitionsButton";
+import { FavouritedArtwork } from "@/lib/types/favouritedArtwork";
 import ArtworkCard from "@/lib/components/artworkCard";
-
-export interface FavouritedArtwork extends Artwork {
-  favouriteId: string;
-}
+import AddToExhibitionButton from "@/lib/components/addToExhibitionsButton";
 
 export default function FavouritesPage() {
   const router = useRouter();
@@ -33,18 +29,22 @@ export default function FavouritesPage() {
 
       const { data, error } = await supabase
         .from("favourites")
-        .select("id, object_id, title, artist, image_url, object_url")
+        .select(
+          "id, object_id, title, artist, image_url, artwork_url, provider"
+        )
         .eq("user_id", user.id);
 
       if (!error && data) {
         const artworks: FavouritedArtwork[] = data.map((fav) => ({
-          favouriteId: fav.id,
-          objectID: fav.object_id,
+          id: fav.object_id,
+          provider: fav.provider,
           title: fav.title,
-          artistDisplayName: fav.artist,
-          primaryImageSmall: fav.image_url,
-          objectURL: fav.object_url,
-          department: "",
+          artist: fav.artist,
+          imageUrl: fav.image_url,
+          artworkUrl: fav.artwork_url,
+          date: "", // Not stored
+          description: "", // Not stored
+          favouriteId: fav.id,
         }));
 
         setFavourites(artworks);
@@ -77,12 +77,14 @@ export default function FavouritesPage() {
           }}
         >
           {favourites.map((art) => (
-            <ArtworkCard key={art.objectID} artwork={art} userId={userId}>
-            {userId && <AddToExhibitionButton
-              favouriteId={art.favouriteId}
-              userId={userId}
-            />}
-          </ArtworkCard>          
+            <ArtworkCard key={art.id} artwork={art} userId={userId}>
+              {userId && (
+                <AddToExhibitionButton
+                  favouriteId={art.favouriteId}
+                  userId={userId}
+                />
+              )}
+            </ArtworkCard>
           ))}
         </section>
       )}

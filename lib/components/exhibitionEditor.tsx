@@ -88,21 +88,21 @@ export default function ExhibitionEditor({
             <ArtworkCard
               key={artwork.id}
               artwork={{
-                objectID: Number(artwork.id),
+                id: artwork.id,
+                provider: artwork.provider,
                 title: artwork.title,
-                artistDisplayName: artwork.artist,
-                primaryImageSmall: artwork.image_url,
-                objectURL: artwork.object_url,
-                department: "",
+                artist: artwork.artist,
+                imageUrl: artwork.image_url,
+                artworkUrl: artwork.artwork_url,
+                date: "",
+                description: undefined,
               }}
             >
               <RemoveFromExhibitionButton
                 exhibitionId={exhibition.id}
                 favouriteId={artwork.id}
                 onRemoved={() =>
-                  setArtworks((prev) =>
-                    prev.filter((a) => a.id !== artwork.id)
-                  )
+                  setArtworks((prev) => prev.filter((a) => a.id !== artwork.id))
                 }
               />
             </ArtworkCard>

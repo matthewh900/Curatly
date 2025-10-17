@@ -1,5 +1,7 @@
 // this file contains all the api functions that I need to fetch data from the met museum of art api
 
+import { UnifiedArtwork } from "../types/unifiedArtwork";
+
 const BASE_URL = "https://collectionapi.metmuseum.org/public/collection/v1";
 
 export interface Artwork {
@@ -52,7 +54,7 @@ export async function getArtworkById(id: number): Promise<Artwork | null> {
 // get multiple artworks by given array of numbers
 export async function getArtworksByIds(
   ids: number[],
-  limit?: number  // make limit optional, but use when provided
+  limit?: number // make limit optional, but use when provided
 ): Promise<Artwork[]> {
   const limitedIds = typeof limit === "number" ? ids.slice(0, limit) : ids;
 
@@ -67,7 +69,6 @@ export async function getArtworksByIds(
     )
     .map((r) => r.value as Artwork);
 }
-
 
 // filter artworks
 export function filterArtworks(
@@ -90,9 +91,7 @@ export function filterArtworks(
     //   ? art.artistDisplayName?.toLowerCase().includes(artist.toLowerCase())
     //   : true;
 
-    return (
-       matchesDepartment 
-    );
+    return matchesDepartment;
   });
 }
 
@@ -125,7 +124,6 @@ export async function searchArtworks(
   return Array.isArray(data.objectIDs) ? data.objectIDs : [];
 }
 
-
 // fetch departments
 export async function getDepartments(): Promise<Department[]> {
   const res = await fetch(`${BASE_URL}/departments`);
@@ -135,4 +133,18 @@ export async function getDepartments(): Promise<Department[]> {
   }
   const data = (await res.json()) as { departments: Department[] };
   return data.departments;
+}
+
+// map an artwork to a unified type interface
+export function mapMetToUnified(art: Artwork): UnifiedArtwork {
+  return {
+    id: `met-${art.objectID}`,
+    provider: "met",
+    title: art.title,
+    artist: art.artistDisplayName || "Unknown Artist",
+    date: art.objectDate || "",
+    imageUrl: art.primaryImageSmall || "",
+    description: art.medium || "",
+    artworkUrl: art.objectURL,
+  };
 }
