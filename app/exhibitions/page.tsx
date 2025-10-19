@@ -14,7 +14,7 @@
 //   thumbnail?: string | null;
 // }
 
-// export default function PublicExhibitions() {
+export default function PublicExhibitions() {
 //   const [exhibitions, setExhibitions] = useState<ExhibitionWithThumbnail[]>([]);
 //   const [loading, setLoading] = useState(true);
 //   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -92,4 +92,4 @@
 //       )}
 //     </main>
 //   );
-// }
+ }
