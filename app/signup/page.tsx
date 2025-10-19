@@ -43,7 +43,7 @@ export default function SignUpPage() {
 
   return (
     <main className={styles.main}>
-      <h1>Sign Up</h1>
+      <h1 className={styles.header}>Sign Up</h1>
       <form onSubmit={handleSignUp}>
         <label className={styles.label}>Email:</label>
         <input

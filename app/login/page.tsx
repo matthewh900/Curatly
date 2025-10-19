@@ -33,7 +33,7 @@ export default function LoginPage() {
 
   return (
     <main className={styles.main}>
-      <h1>Log In</h1>
+      <h1 className={styles.header}>Log In</h1>
       <form onSubmit={handleLogin}>
         <label className={styles.label}>Email:</label>
         <input
