@@ -1,5 +1,5 @@
 import Link from "next/link";
-import styles from "@/styles/exhibitionCard.module.css";
+import styles from "@/lib/styles/exhibitionCard.module.css";
 
 interface ExhibitionCardProps {
   exhibition: {

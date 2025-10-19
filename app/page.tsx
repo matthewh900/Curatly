@@ -1,6 +1,6 @@
 "use client";
 
-import styles from "@/styles/homePage.module.css";
+import styles from "@/lib/styles/homePage.module.css";
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";

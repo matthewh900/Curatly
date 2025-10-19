@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import ArtworkCard from "@/lib/components/artworkCard";
 import RemoveFromExhibitionButton from "@/lib/components/removeFromExhibitionButton";
 import { ExhibitionArtwork } from "@/app/exhibitions/[id]/page";
-import styles from "@/styles/exhibitionPage.module.css";
+import styles from "@/lib/styles/exhibitionPage.module.css";
 
 interface ExhibitionEditorProps {
   exhibition: {

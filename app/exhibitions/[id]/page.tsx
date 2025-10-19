@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import ExhibitionEditor from "@/lib/components/exhibitionEditor";
 import { supabaseServer } from "@/lib/supabaseServerClient";
-import styles from "@/styles/exhibitionPage.module.css";
+import styles from "@/lib/styles/exhibitionPage.module.css"
 
 export interface ExhibitionArtwork {
   id: string;

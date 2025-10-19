@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
-import styles from "@/styles/profilePage.module.css";
+import styles from "@/lib/styles/profilePage.module.css";
 import ExhibitionCard from "@/lib/components/exhibitionCard";
 
 interface ExhibitionWithThumbnail {

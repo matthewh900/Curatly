@@ -3,7 +3,7 @@
 import React from "react";
 import { UnifiedArtwork } from "../types/unifiedArtwork";
 import FavouriteButton from "@/lib/components/favouriteButton";
-import styles from "@/styles/favouritesPage.module.css"
+import styles from "@/lib/styles/favouritesPage.module.css"
 
 interface ArtworkCardProps {
   artwork: UnifiedArtwork;

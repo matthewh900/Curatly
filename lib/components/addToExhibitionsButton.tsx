@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import styles from "@/styles/favouritesPage.module.css";
+import styles from "@/lib/styles/favouritesPage.module.css";
 
 interface AddToExhibitionButtonProps {
   favouriteId: string;

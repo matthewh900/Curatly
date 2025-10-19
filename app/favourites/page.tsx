@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { FavouritedArtwork } from "@/lib/types/favouritedArtwork";
 import ArtworkCard from "@/lib/components/artworkCard";
 import AddToExhibitionButton from "@/lib/components/addToExhibitionsButton";
-import styles from "@/styles/favouritesPage.module.css"
+import styles from "@/lib/styles/favouritesPage.module.css"
 
 export default function FavouritesPage() {
   const router = useRouter();

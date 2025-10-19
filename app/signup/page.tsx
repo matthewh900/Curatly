@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import styles from "@/styles/signUpPage.module.css";
+import styles from "@/lib/styles/signUpPage.module.css";
 
 export default function SignUpPage() {
   const router = useRouter();
