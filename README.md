@@ -1,4 +1,4 @@
-# 🖼️ Curatlt
+# 🖼️ Curatly
 
 An interactive web application for creating and managing art exhibitions, built with **Next.js** and **Supabase**.
 
