@@ -16,7 +16,7 @@ export async function GET(request: Request) {
 
     const query = url.searchParams.get("query") || "art";
     const departmentId = url.searchParams.get("departmentId");
-    const page = parseInt(url.searchParams.get("page") || "1", 10);
+    let page = parseInt(url.searchParams.get("page") || "1", 10);
     const limit = parseInt(url.searchParams.get("limit") || "20", 10);
     const provider = url.searchParams.get("provider") || "met";
 
@@ -32,31 +32,56 @@ export async function GET(request: Request) {
     let totalPages = 0;
 
     if (provider === "met") {
-      // Search Met Museum for object IDs matching query & department
       const ids = await searchMetArtworks(
         query,
         departmentId ? Number(departmentId) : undefined
       );
-      total = ids.length;
-      totalPages = Math.ceil(total / limit);
+    
+      const validIds = Array.isArray(ids) ? ids : [];
+      total = validIds.length;
+      totalPages = total > 0 ? Math.ceil(total / limit) : 0;
+      page = totalPages > 0 ? Math.min(page, totalPages) : 1;
+    
       const startIndex = (page - 1) * limit;
-      const selectedIds = ids.slice(startIndex, startIndex + limit);
-
-      // Fetch full artwork details by IDs
-      const metArtworks = await getMetArtworksByIds(selectedIds);
-
-      // Map Met artworks to unified type
-      artworks = metArtworks.map(mapMetToUnified);
+    
+      // Attempt to get up to `limit` valid artworks
+      const validArtworks: ReturnType<typeof mapMetToUnified>[] = [];
+      let attempts = 0;
+      let index = startIndex;
+    
+      while (validArtworks.length < limit && index < validIds.length && attempts < limit * 3) {
+        const chunk = validIds.slice(index, index + 5);
+        const chunkArtworks = await getMetArtworksByIds(chunk);
+        const unified = chunkArtworks.map(mapMetToUnified);
+        validArtworks.push(...unified);
+    
+        index += 5;
+        attempts++;
+      }
+    
+      artworks = validArtworks.slice(0, limit);
+    
+      console.log(
+        `Met artworks search query="${query}", department=${departmentId}, page=${page}/${totalPages}, results=${artworks.length}`
+      );    
     } else if (provider === "aic") {
       // Search AIC API with pagination
       const aicResponse = await searchAICArtworks(query, page, limit);
       total = aicResponse.pagination.total;
       totalPages = aicResponse.pagination.total_pages;
 
+      if (page > totalPages && totalPages > 0) {
+        return NextResponse.json(
+          { error: "Page number out of range" },
+          { status: 400 }
+        );
+      }
+
       // Map AIC artworks to unified type using iiif_url from config
       artworks = aicResponse.data.map((a) =>
         mapAICToUnified(a, aicResponse.config.iiif_url)
       );
+
     } else {
       return NextResponse.json(
         { error: "Invalid provider specified" },

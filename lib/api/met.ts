@@ -75,21 +75,12 @@ export function filterArtworks(
   artworks: Artwork[],
   filters: ArtworkFilter
 ): Artwork[] {
-  return artworks.filter((art) => {
-    const { department } = filters;
+  const { department } = filters;
 
-    // const matchesMedium = medium
-    //   ? art.medium?.toLowerCase().includes(medium.toLowerCase())
-    //   : true;
+  return artworks.filter((art) => {
     const matchesDepartment = department
       ? art.department?.toLowerCase() === department.toLowerCase()
       : true;
-    // const matchesCulture = culture
-    //   ? art.culture?.toLowerCase().includes(culture.toLowerCase())
-    //   : true;
-    // const matchesArtist = artist
-    //   ? art.artistDisplayName?.toLowerCase().includes(artist.toLowerCase())
-    //   : true;
 
     return matchesDepartment;
   });
@@ -98,30 +89,39 @@ export function filterArtworks(
 // search for artwork IDs using a query string
 export async function searchArtworks(
   query?: string,
-  departmentId?: number
+  departmentId?: number,
+  retries = 3,
+  backoff = 500
 ): Promise<number[]> {
   const encodedQuery = encodeURIComponent(query?.trim() || "*");
-
   let url = `${BASE_URL}/search?q=${encodedQuery}&hasImages=true`;
 
   if (departmentId !== undefined) {
     url += `&departmentId=${departmentId}`;
   }
 
-  const res = await fetch(url);
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const res = await fetch(url);
 
-  if (!res.ok) {
-    console.warn(`Search failed with status ${res.status}: ${url}`);
-    return []; // gracefully handle bad search response
+    if (res.ok) {
+      const data = (await res.json()) as {
+        total: number;
+        objectIDs: number[] | null;
+      };
+      return Array.isArray(data.objectIDs) ? data.objectIDs : [];
+    } else if (res.status === 403 && attempt < retries) {
+      // Wait exponentially longer before retrying
+      await new Promise((resolve) =>
+        setTimeout(resolve, backoff * 2 ** attempt)
+      );
+      continue;
+    } else {
+      console.warn(`Search failed with status ${res.status}: ${url}`);
+      return [];
+    }
   }
 
-  const data = (await res.json()) as {
-    total: number;
-    objectIDs: number[] | null;
-  };
-
-  // Return an empty array instead of null
-  return Array.isArray(data.objectIDs) ? data.objectIDs : [];
+  return [];
 }
 
 // fetch departments
