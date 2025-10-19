@@ -1,0 +1,56 @@
+/* styles/signUpPage.module.css */
+
+.main {
+  background-color: var(--bg-panel);
+  padding: 2rem;
+  border-radius: 10px;
+  max-width: 400px;
+  margin: 2rem auto;
+  box-shadow: 0 4px 10px rgba(15, 30, 26, 0.6);
+  color: var(--text-main);
+}
+
+h1 {
+  text-align: center;
+  color: var(--heading);
+  margin-bottom: 1.5rem;
+}
+
+.label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #b8e6c1;
+  font-weight: 600;
+}
+
+.input {
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 2px solid var(--border-green);
+  width: 100%;
+  background-color: var(--bg-panel);
+  color: var(--text-main);
+  font-weight: 500;
+  margin-bottom: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--accent-bright);
+  box-shadow: 0 0 8px var(--accent-bright);
+}
+
+.error {
+  color: var(--error-red);
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.success {
+  color: #8fe89c;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 1rem;
+}

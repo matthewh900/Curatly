@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import styles from "@/styles/signUpPage.module.css";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -26,10 +27,7 @@ export default function SignUpPage() {
 
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    const { error } = await supabase.auth.signUp({ email, password });
 
     setLoading(false);
 
@@ -44,42 +42,42 @@ export default function SignUpPage() {
   }
 
   return (
-    <main style={{ maxWidth: 400, margin: "2rem auto", padding: "1rem" }}>
+    <main className={styles.main}>
       <h1>Sign Up</h1>
       <form onSubmit={handleSignUp}>
-        <label>Email:</label>
+        <label className={styles.label}>Email:</label>
         <input
           type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          style={{ width: "100%", marginBottom: "1rem" }}
+          className={styles.input}
         />
 
-        <label>Password:</label>
+        <label className={styles.label}>Password:</label>
         <input
           type="password"
           required
           minLength={6}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          style={{ width: "100%", marginBottom: "1rem" }}
+          className={styles.input}
         />
 
-        <label>Confirm Password:</label>
+        <label className={styles.label}>Confirm Password:</label>
         <input
           type="password"
           required
           minLength={6}
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          style={{ width: "100%", marginBottom: "1rem" }}
+          className={styles.input}
         />
 
-        {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
-        {successMsg && <p style={{ color: "green" }}>{successMsg}</p>}
+        {errorMsg && <p className={styles.error}>{errorMsg}</p>}
+        {successMsg && <p className={styles.success}>{successMsg}</p>}
 
-        <button type="submit" disabled={loading} style={{ width: "100%" }}>
+        <button type="submit" disabled={loading} >
           {loading ? "Creating account..." : "Sign Up"}
         </button>
       </form>

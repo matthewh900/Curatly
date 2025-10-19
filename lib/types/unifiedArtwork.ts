@@ -8,4 +8,3 @@ export interface UnifiedArtwork {
   description?: string;
   artworkUrl: string;
 }
-

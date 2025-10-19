@@ -1,0 +1,74 @@
+/* styles/profilePage.module.css */
+
+.main {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.input {
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 2px solid var(--border-green);
+  background-color: var(--bg-panel);
+  color: var(--text-main);
+  font-weight: 500;
+  transition: border-color 0.3s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--accent-bright);
+  box-shadow: 0 0 8px var(--accent-bright);
+}
+
+.button {
+  width: 100%;
+  padding: 10px;
+  border-radius: 12px; /* More rounded */
+  border: 2px solid var(--accent-green);
+  background-color: #2a4d32;
+  color: #c9f7c0;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4);
+}
+
+.button:hover {
+  background-color: var(--accent-green);
+  color: var(--bg-dark);
+  box-shadow: 0 6px 12px rgba(76, 175, 80, 0.7);
+  border-color: var(--accent-bright);
+}
+
+.section {
+  margin-top: 3rem;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+}
+
+.listItem {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.heading {
+  color: var(--heading);
+}
+
+.subHeading {
+  color: #b8e6c1;
+}

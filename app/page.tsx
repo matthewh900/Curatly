@@ -1,5 +1,6 @@
 "use client";
 
+import styles from "@/styles/homePage.module.css";
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -59,9 +60,11 @@ export default function HomePage() {
     debounceTimeout.current = setTimeout(() => {
       const params = new URLSearchParams();
 
-      if (query.trim() !== "") params.set("query", encodeURIComponent(query.trim()));
+      if (query.trim() !== "")
+        params.set("query", encodeURIComponent(query.trim()));
       if (provider) params.set("provider", provider);
-      if (provider === "met" && departmentId !== null) params.set("departmentId", departmentId.toString());
+      if (provider === "met" && departmentId !== null)
+        params.set("departmentId", departmentId.toString());
       params.set("page", currentPage.toString());
 
       router.replace(`/?${params.toString()}`);
@@ -163,13 +166,15 @@ export default function HomePage() {
 
     fetchUserAndProfile();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) setUser(session.user);
-      else {
-        setUser(null);
-        setDisplayName(null);
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (session?.user) setUser(session.user);
+        else {
+          setUser(null);
+          setDisplayName(null);
+        }
       }
-    });
+    );
 
     return () => listener.subscription.unsubscribe();
   }, []);
@@ -201,31 +206,20 @@ export default function HomePage() {
 
   return (
     <>
-      <style jsx global>{`
-        @keyframes spin {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-      `}</style>
-
-      <main style={mainStyle}>
-        <h1 style={centeredTextStyle}>Welcome to Curatly</h1>
+      <main className={styles.main}>
+        <h1 className={styles.centeredText}>Welcome to Curatly</h1>
 
         {/* Auth Section */}
-        <section style={centeredSectionStyle}>
+        <section className={styles.centeredSection}>
           {user ? (
             <>
               <p>
                 Hello, <strong>{displayName ?? user.email}</strong>!
               </p>
               <Link href="/profile">
-                <button style={buttonStyle}>Go to Profile</button>
+                <button className={styles.button}>Go to Profile</button>
               </Link>
-              <button onClick={handleLogout} style={buttonStyle}>
+              <button onClick={handleLogout} className={styles.button}>
                 Logout
               </button>
             </>
@@ -233,10 +227,10 @@ export default function HomePage() {
             <>
               <p>You are not logged in.</p>
               <Link href="/login">
-                <button style={buttonStyle}>Login</button>
+                <button className={styles.button}>Login</button>
               </Link>
               <Link href="/signup">
-                <button style={buttonStyle}>Sign Up</button>
+                <button className={styles.button}>Sign Up</button>
               </Link>
             </>
           )}
@@ -248,21 +242,21 @@ export default function HomePage() {
             e.preventDefault();
             setCurrentPage(1);
           }}
-          style={searchFormStyle}
+          className={styles.searchForm}
         >
           <input
             type="text"
             placeholder="Search artworks..."
             value={query}
             onChange={(e) => onQueryChange(e.target.value)}
-            style={inputStyle}
+            className={styles.input}
             aria-label="Search artworks"
           />
 
           <select
             value={provider}
             onChange={(e) => onProviderChange(e.target.value as "met" | "aic")}
-            style={inputStyle}
+            className={styles.input}
             aria-label="Select provider"
           >
             <option value="met">Met Museum</option>
@@ -273,7 +267,7 @@ export default function HomePage() {
             <select
               value={departmentId ?? ""}
               onChange={(e) => onDepartmentChange(e.target.value)}
-              style={inputStyle}
+              className={styles.input}
               aria-label="Filter by department"
             >
               <option value="">All Departments</option>
@@ -285,19 +279,19 @@ export default function HomePage() {
             </select>
           )}
 
-          <button type="submit" style={buttonStyle}>
+          <button type="submit" className={styles.button}>
             Search
           </button>
         </form>
 
         {/* Loading/Error states */}
-        {error && <p style={errorStyle}>{error}</p>}
+        {error && <p className={styles.error}>{error}</p>}
         {!loading && artworks.length === 0 && (
-          <p style={centeredTextStyle}>No artworks found.</p>
+          <p className={styles.centeredText}>No artworks found.</p>
         )}
 
         {/* Artworks Grid */}
-        <section style={gridStyle}>
+        <section className={styles.grid}>
           {artworks.map((art) => (
             <ArtworkCard key={art.id} artwork={art} userId={user?.id ?? null} />
           ))}
@@ -305,11 +299,12 @@ export default function HomePage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div style={paginationStyle}>
+          <div className={styles.pagination}>
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              style={{ ...buttonStyle, marginRight: 10 }}
+              className={styles.button}
+              style={{ marginRight: 10 }}
             >
               Previous
             </button>
@@ -319,7 +314,8 @@ export default function HomePage() {
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              style={{ ...buttonStyle, marginLeft: 10 }}
+              className={styles.button}
+              style={{ marginLeft: 10 }}
             >
               Next
             </button>
@@ -328,93 +324,11 @@ export default function HomePage() {
 
         {/* Loading overlay */}
         {loading && (
-          <div style={loadingOverlayStyle}>
-            <div style={spinnerStyle} aria-label="Loading"></div>
+          <div className={styles.loadingOverlay}>
+            <div className={styles.spinner} aria-label="Loading"></div>
           </div>
         )}
       </main>
     </>
   );
 }
-
-/* Reusable Styles Below */
-
-const mainStyle: React.CSSProperties = {
-  maxWidth: 700,
-  margin: "2rem auto",
-  padding: "0 1rem",
-  position: "relative",
-};
-
-const centeredTextStyle: React.CSSProperties = {
-  textAlign: "center",
-};
-
-const centeredSectionStyle: React.CSSProperties = {
-  ...centeredTextStyle,
-  marginBottom: 20,
-};
-
-const buttonStyle: React.CSSProperties = {
-  padding: "8px 16px",
-  borderRadius: 4,
-  border: "1px solid #0070f3",
-  backgroundColor: "#0070f3",
-  color: "white",
-  cursor: "pointer",
-  fontWeight: "500",
-};
-
-const inputStyle: React.CSSProperties = {
-  padding: "8px 10px",
-  borderRadius: 4,
-  border: "1px solid #ccc",
-  width: 180,
-};
-
-const searchFormStyle: React.CSSProperties = {
-  display: "flex",
-  gap: 10,
-  marginBottom: 20,
-  justifyContent: "center",
-  flexWrap: "wrap",
-};
-
-const gridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-  gap: 15,
-};
-
-const errorStyle: React.CSSProperties = {
-  color: "red",
-  textAlign: "center",
-};
-
-const paginationStyle: React.CSSProperties = {
-  textAlign: "center",
-  marginTop: 20,
-};
-
-const loadingOverlayStyle: React.CSSProperties = {
-  position: "fixed",
-  top: 0,
-  left: 0,
-  width: "100vw",
-  height: "100vh",
-  backdropFilter: "blur(4px)",
-  backgroundColor: "rgba(0, 0, 0, 0.4)",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  zIndex: 9999,
-};
-
-const spinnerStyle: React.CSSProperties = {
-  border: "6px solid #f3f3f3",
-  borderTop: "6px solid #0070f3",
-  borderRadius: "50%",
-  width: 50,
-  height: 50,
-  animation: "spin 1s linear infinite",
-};

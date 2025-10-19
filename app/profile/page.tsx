@@ -4,6 +4,15 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
+import styles from "@/styles/profilePage.module.css";
+import ExhibitionCard from "@/lib/components/exhibitionCard";
+
+interface ExhibitionWithThumbnail {
+  id: string;
+  name: string;
+  description: string | null;
+  thumbnail?: string | null;
+}
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -14,9 +23,8 @@ export default function ProfilePage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
-  const [exhibitions, setExhibitions] = useState<any[]>([]);
+  const [exhibitions, setExhibitions] = useState<ExhibitionWithThumbnail[]>([]);
 
-  // Fetch user profile & exhibitions
   useEffect(() => {
     const getProfileAndExhibitions = async () => {
       setLoading(true);
@@ -47,17 +55,42 @@ export default function ProfilePage() {
         setDisplayName(profile.display_name);
       }
 
-      // Fetch exhibitions
+      // Fetch exhibitions + one favourite thumbnail each
       const { data: exhibitionsData, error: exhibitionsError } = await supabase
         .from("exhibitions")
-        .select("id, name, description")
+        .select(`
+          id,
+          name,
+          description,
+          exhibition_favourites (
+            position,
+            favourite: favourites!inner (
+              id,
+              title,
+              image_url
+            )
+          )
+        `)
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
       if (exhibitionsError) {
         console.error("Error loading exhibitions:", exhibitionsError);
-      } else {
-        setExhibitions(exhibitionsData || []);
+      } else if (exhibitionsData) {
+        // For each exhibition, pick the favourite with the smallest position for thumbnail
+        const exWithThumbs: ExhibitionWithThumbnail[] = exhibitionsData.map((ex: any) => {
+          const sortedFavs = (ex.exhibition_favourites || []).sort(
+            (a: any, b: any) => a.position - b.position
+          );
+          const firstFav = sortedFavs[0]?.favourite;
+          return {
+            id: ex.id,
+            name: ex.name,
+            description: ex.description,
+            thumbnail: firstFav?.image_url || null,
+          };
+        });
+        setExhibitions(exWithThumbs);
       }
 
       setLoading(false);
@@ -98,43 +131,39 @@ export default function ProfilePage() {
   }
 
   return (
-    <main style={{ maxWidth: 600, margin: "2rem auto", padding: "1rem" }}>
-      <h1>Your Profile</h1>
+    <main className={styles.main}>
+      <h1 className={styles.heading}>Your Profile</h1>
 
-      <label>Display Name:</label>
+      <label htmlFor="displayName">Display Name:</label>
       <input
+        id="displayName"
         type="text"
         value={displayName}
         onChange={(e) => setDisplayName(e.target.value)}
-        style={{ width: "100%", marginBottom: "1rem" }}
         placeholder="Enter display name"
+        className={styles.input}
       />
 
-      {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
-      {successMsg && <p style={{ color: "green" }}>{successMsg}</p>}
+      {errorMsg && <p className={styles.errorMsg}>{errorMsg}</p>}
+      {successMsg && <p className={styles.successMsg}>{successMsg}</p>}
 
-      <button onClick={handleSave} disabled={saving} style={{ width: "100%" }}>
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        className={styles.button}
+        type="button"
+      >
         {saving ? "Saving..." : "Save Display Name"}
       </button>
 
-      {/* Favourites Link Section */}
-      <section style={{ marginTop: "3rem" }}>
-        <h2>Your Favourites</h2>
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          <li
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: 4,
-              padding: "1rem",
-              marginBottom: "1rem",
-            }}
-          >
-            <Link
-              href="/favourites"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
-              <h3 style={{ margin: 0 }}>View Your Favourites</h3>
-              <p style={{ margin: 0, color: "#555" }}>
+      {/* Favourites Section */}
+      <section className={styles.section}>
+        <h2 className={styles.heading}>Your Favourites</h2>
+        <ul className={styles.list}>
+          <li className={styles.listItem}>
+            <Link href="/favourites" className={styles.link}>
+              <h3>View Your Favourites</h3>
+              <p className={styles.subHeading}>
                 Browse all the artworks you've favourited.
               </p>
             </Link>
@@ -143,32 +172,16 @@ export default function ProfilePage() {
       </section>
 
       {/* Exhibitions Section */}
-      <section style={{ marginTop: "3rem" }}>
-        <h2>Your Exhibitions</h2>
+      <section className={styles.section}>
+        <h2 className={styles.heading}>Your Exhibitions</h2>
 
         {exhibitions.length === 0 ? (
           <p>You haven't created any exhibitions yet.</p>
         ) : (
-          <ul style={{ listStyle: "none", padding: 0 }}>
+          <ul className={styles.list}>
             {exhibitions.map((exhibition) => (
-              <li
-                key={exhibition.id}
-                style={{
-                  border: "1px solid #ddd",
-                  borderRadius: 4,
-                  padding: "1rem",
-                  marginBottom: "1rem",
-                }}
-              >
-                <Link
-                  href={`/exhibitions/${exhibition.id}`}
-                  style={{ textDecoration: "none", color: "inherit" }}
-                >
-                  <h3 style={{ margin: "0 0 0.5rem" }}>{exhibition.name}</h3>
-                  <p style={{ margin: 0, color: "#555" }}>
-                    {exhibition.description || "No description provided."}
-                  </p>
-                </Link>
+              <li key={exhibition.id} className={styles.listItem}>
+                <ExhibitionCard exhibition={exhibition} />
               </li>
             ))}
           </ul>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import styles from "@/styles/loginPage.module.css";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,35 +27,35 @@ export default function LoginPage() {
     if (error) {
       setErrorMsg(error.message);
     } else {
-      router.push("/profile"); // or wherever you want
+      router.push("/profile");
     }
   }
 
   return (
-    <main style={{ maxWidth: 400, margin: "2rem auto", padding: "1rem" }}>
+    <main className={styles.main}>
       <h1>Log In</h1>
       <form onSubmit={handleLogin}>
-        <label>Email:</label>
+        <label className={styles.label}>Email:</label>
         <input
           type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          style={{ width: "100%", marginBottom: "1rem" }}
+          className={styles.input}
         />
 
-        <label>Password:</label>
+        <label className={styles.label}>Password:</label>
         <input
           type="password"
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          style={{ width: "100%", marginBottom: "1rem" }}
+          className={styles.input}
         />
 
-        {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
+        {errorMsg && <p className={styles.error}>{errorMsg}</p>}
 
-        <button type="submit" disabled={loading} style={{ width: "100%" }}>
+        <button type="submit" disabled={loading} className={styles.button}>
           {loading ? "Logging in..." : "Login"}
         </button>
       </form>

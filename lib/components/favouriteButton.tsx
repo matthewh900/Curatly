@@ -17,7 +17,7 @@ export default function FavouriteButton({ artwork, userId }: FavouriteButtonProp
     if (!userId) return;
 
     const checkFavourite = async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("favourites")
         .select("id")
         .eq("user_id", userId)
@@ -39,7 +39,6 @@ export default function FavouriteButton({ artwork, userId }: FavouriteButtonProp
     setLoading(true);
 
     if (isFavourited) {
-      // Remove from favourites
       const { error } = await supabase
         .from("favourites")
         .delete()
@@ -48,10 +47,9 @@ export default function FavouriteButton({ artwork, userId }: FavouriteButtonProp
 
       if (!error) setIsFavourited(false);
     } else {
-      // Add to favourites
       const { error } = await supabase.from("favourites").insert({
         user_id: userId,
-        object_id: artwork.id, // e.g. "met-123" or "aic-456"
+        object_id: artwork.id,
         provider: artwork.provider,
         title: artwork.title,
         artist: artwork.artist,
@@ -71,16 +69,24 @@ export default function FavouriteButton({ artwork, userId }: FavouriteButtonProp
       disabled={loading}
       aria-label={isFavourited ? "Unfavourite" : "Favourite"}
       style={{
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        fontSize: 20,
-        marginTop: 8,
+        all: "unset",
+        ...styles.button,
         color: isFavourited ? "red" : "#aaa",
-        transition: "color 0.2s",
+        cursor: loading ? "not-allowed" : "pointer",
+        opacity: loading ? 0.6 : 1,
       }}
     >
       {isFavourited ? "♥︎" : "♡"}
     </button>
   );
 }
+
+const styles: { [key: string]: React.CSSProperties } = {
+  button: {
+    background: "none",
+    border: "none",
+    fontSize: 20,
+    marginTop: 8,
+    transition: "color 0.2s ease",
+  },
+};

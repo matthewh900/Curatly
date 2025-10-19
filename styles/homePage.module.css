@@ -1,0 +1,107 @@
+/* styles/homePage.module.css */
+
+.main {
+  max-width: 700px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  position: relative;
+  background-color: var(--bg-dark); /* Optional if default body */
+  min-height: 100vh;
+}
+
+.centeredText {
+  text-align: center;
+  color: var(--heading);
+  font-weight: 600;
+}
+
+.centeredSection {
+  text-align: center;
+  margin-bottom: 1.25rem;
+  color: #b8e6c1; /* Optional muted green variation */
+}
+
+/* If you're using className={styles.button}, extend the global button */
+.button {
+  margin: 6px;
+  border-radius: 999px;
+  border: 2px solid var(--accent-green);
+  background-color: #2a4d32;
+  color: #c9f7c0;
+  font-weight: 600;
+  padding: 0.625rem 1.25rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4);
+}
+
+.button:hover {
+  background-color: var(--accent-green);
+  color: var(--bg-dark);
+  box-shadow: 0 6px 12px rgba(76, 175, 80, 0.7);
+  border-color: var(--accent-bright);
+}
+
+/* Input overrides (optional if global styles handle this well) */
+.input {
+  width: 180px;
+}
+
+.searchForm {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 1.25rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 18px;
+}
+
+.error {
+  color: var(--error-red);
+  text-align: center;
+  font-weight: 600;
+}
+
+.pagination {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: var(--heading);
+  font-weight: 600;
+}
+
+.loadingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  backdrop-filter: blur(6px);
+  background-color: rgba(15, 30, 26, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.spinner {
+  border: 6px solid #2a4d32;
+  border-top: 6px solid var(--accent-green);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

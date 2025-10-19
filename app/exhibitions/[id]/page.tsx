@@ -1,9 +1,7 @@
-// exhibition page will show data from the items chosen by the userAgent, for expandNextJsTemplate, images, bio, date discovered/created, etc
-// maybe allow users to be creative with exhibitions by putting items in different section, organising by date/location etc
-// /app/exhibitions/[id]/page.tsx
 import { notFound } from "next/navigation";
 import ExhibitionEditor from "@/lib/components/exhibitionEditor";
 import { supabaseServer } from "@/lib/supabaseServerClient";
+import styles from "@/styles/exhibitionPage.module.css";
 
 export interface ExhibitionArtwork {
   id: string;
@@ -48,7 +46,6 @@ export default async function ExhibitionPage(context: {
   let artworks: ExhibitionArtwork[] = [];
 
   if (favouriteIds.length > 0) {
-    // Fetch all favourites from favourites table (includes provider info)
     const { data: favourites, error: favouritesDetailsError } =
       await supabaseServer
         .from("favourites")
@@ -60,7 +57,7 @@ export default async function ExhibitionPage(context: {
     } else if (favourites) {
       artworks = favourites.map((f) => ({
         id: String(f.id),
-        provider: f.provider as "met" | "aic", // cast provider
+        provider: f.provider as "met" | "aic",
         title: f.title || "Untitled",
         artist: f.artist || "Unknown Artist",
         image_url: f.image_url || "",
@@ -70,7 +67,7 @@ export default async function ExhibitionPage(context: {
   }
 
   return (
-    <main style={styles.main}>
+    <main className={styles.main}>
       <ExhibitionEditor
         exhibition={{
           id: exhibition.id,
@@ -82,12 +79,3 @@ export default async function ExhibitionPage(context: {
     </main>
   );
 }
-
-// Styles
-const styles = {
-  main: {
-    maxWidth: "960px",
-    margin: "2rem auto",
-    padding: "1rem",
-  },
-};

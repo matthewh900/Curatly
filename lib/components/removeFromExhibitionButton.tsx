@@ -15,6 +15,7 @@ export default function RemoveFromExhibitionButton({
   onRemoved,
 }: RemoveFromExhibitionButtonProps) {
   const [removing, setRemoving] = useState(false);
+  const [hovered, setHovered] = useState(false);
 
   const handleClick = async () => {
     if (!window.confirm("Remove this artwork from the exhibition?")) return;
@@ -33,29 +34,51 @@ export default function RemoveFromExhibitionButton({
       console.error("Error removing artwork:", error.message);
       alert("Failed to remove artwork.");
     } else {
-      onRemoved(); // Tell the parent to remove from state
+      onRemoved();
     }
 
     setRemoving(false);
+  };
+
+  const combinedStyle = {
+    ...styles.base,
+    ...(hovered && !removing ? styles.hover : {}),
+    ...(removing ? styles.disabled : {}),
   };
 
   return (
     <button
       onClick={handleClick}
       disabled={removing}
-      style={{
-        marginTop: "0.75rem",
-        padding: "0.4rem 0.75rem",
-        fontSize: "0.9rem",
-        backgroundColor: "#e00",
-        color: "#fff",
-        border: "none",
-        borderRadius: 4,
-        cursor: "pointer",
-        width: "100%",
-      }}
+      style={combinedStyle}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      aria-busy={removing}
     >
       {removing ? "Removing..." : "Remove from Exhibition"}
     </button>
   );
 }
+
+const styles = {
+  base: {
+    marginTop: "0.75rem",
+    padding: "0.5rem 1rem",
+    fontSize: "1rem",
+    border: "none",
+    borderRadius: "6px",
+    width: "100%",
+    cursor: "pointer",
+    transition: "background-color 0.3s ease",
+    color: "#fff",
+    userSelect: "none" as const,
+    opacity: 1,
+  },
+  hover: {
+    backgroundColor: "#67d06b",
+  },
+  disabled: {
+    cursor: "not-allowed",
+    opacity: 0.7,
+  },
+};

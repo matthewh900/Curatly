@@ -1,0 +1,51 @@
+.card {
+  display: flex;
+  gap: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 1rem;
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.thumbnailWrapper {
+  flex-shrink: 0;
+  width: 100px;
+  height: 100px;
+  overflow: hidden;
+  border-radius: 6px;
+  background-color: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.noThumbnail {
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.content {
+  flex-grow: 1;
+}
+
+.name {
+  margin: 0 0 0.5rem 0;
+}
+
+.description {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}

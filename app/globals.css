@@ -1,31 +1,109 @@
-@import "tailwindcss";
+/* styles/globals.css */
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-dark: #0f1e1a;
+  --bg-panel: #1a2d20;
+  --text-main: #d9f0e6;
+  --text-muted: #779c85;
+  --accent-green: #4caf50;
+  --accent-bright: #67d06b;
+  --border-green: #3a6a40;
+  --error-red: #e57373;
+  --heading: #a3d9b1;
+
+  --font-body: var(--font-nunito), sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  padding: 0;
+  margin: 0;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  line-height: 1.6;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: var(--accent-bright);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--accent-green);
+  text-decoration: underline;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--heading);
+  font-weight: 700;
+  margin-top: 0;
+  font-family: var(--font-body); /* Make sure headings match body font */
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+/* Inputs */
+input,
+textarea,
+select {
+  color: var(--text-main);
+  background-color: var(--bg-panel);
+  border: 2px solid var(--border-green);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent-bright);
+  box-shadow: 0 0 8px var(--accent-bright);
+}
+
+/* Rounder, consistent buttons */
+button {
+  padding: 10px 24px;
+  border-radius: 999px; /* Fully rounded (pill-style) */
+  border: 2px solid var(--accent-green);
+  background-color: #2a4d32;
+  color: #c9f7c0;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  /* box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4); */
+}
+
+button:hover {
+  background-color: var(--accent-green);
+  color: var(--bg-dark);
+  border-color: var(--accent-bright);
+  box-shadow: 0 6px 12px rgba(76, 175, 80, 0.7);
+}
+
+/* Optional utility class for consistency */
+.themed-body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+}
+
+/* Page layout wrapper */
+.page-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 3rem 1rem 2rem;
+  padding-top: 100px;
 }

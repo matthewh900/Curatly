@@ -3,6 +3,7 @@
 import React from "react";
 import { UnifiedArtwork } from "../types/unifiedArtwork";
 import FavouriteButton from "@/lib/components/favouriteButton";
+import styles from "@/styles/favouritesPage.module.css"
 
 interface ArtworkCardProps {
   artwork: UnifiedArtwork;
@@ -16,29 +17,29 @@ export default function ArtworkCard({
   children,
 }: ArtworkCardProps) {
   return (
-    <article style={artCardStyle}>
+    <article className={styles.artCard}>
       {artwork.imageUrl ? (
         <img
           src={artwork.imageUrl}
           alt={artwork.title}
-          style={artImageStyle}
+          className={styles.artImage}
           loading="lazy"
         />
       ) : (
-        <div style={imagePlaceholderStyle}>No Image</div>
+        <div className={styles.imagePlaceholder}>No Image</div>
       )}
 
-      <h3 style={artTitleStyle}>{artwork.title}</h3>
-      <p style={artArtistStyle}>{artwork.artist || "Unknown Artist"}</p>
+      <h3 className={styles.artTitle}>{artwork.title}</h3>
+      <p className={styles.artArtist}>{artwork.artist || "Unknown Artist"}</p>
 
-      {artwork.date && <p style={artDateStyle}>{artwork.date}</p>}
+      {artwork.date && <p className={styles.artDate}>{artwork.date}</p>}
 
       {artwork.artworkUrl && (
         <a
           href={artwork.artworkUrl}
           target="_blank"
           rel="noopener noreferrer"
-          style={linkStyle}
+          className={styles.link}
         >
           View on {artwork.provider === "met" ? "The Met" : "AIC"}
         </a>

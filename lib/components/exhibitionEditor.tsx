@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import ArtworkCard from "@/lib/components/artworkCard";
 import RemoveFromExhibitionButton from "@/lib/components/removeFromExhibitionButton";
 import { ExhibitionArtwork } from "@/app/exhibitions/[id]/page";
+import styles from "@/styles/exhibitionPage.module.css";
 
 interface ExhibitionEditorProps {
   exhibition: {
@@ -24,7 +25,6 @@ export default function ExhibitionEditor({
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
   const [artworks, setArtworks] = useState(initialArtworks);
 
   const handleSave = async () => {
@@ -51,36 +51,42 @@ export default function ExhibitionEditor({
   };
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.heading}>Edit Exhibition</h1>
+    <div className={styles.container}>
+      <h1 className={styles.heading}>Edit Exhibition</h1>
 
-      <label style={styles.label}>Name:</label>
+      <label className={styles.label}>Name:</label>
       <input
         type="text"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        style={styles.input}
+        className={styles.input}
         disabled={saving}
       />
 
-      <label style={styles.label}>Description:</label>
+      <label className={styles.label}>Description:</label>
       <textarea
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        style={styles.textarea}
+        className={styles.textarea}
         disabled={saving}
       />
 
-      {errorMsg && <p style={styles.error}>{errorMsg}</p>}
-      {successMsg && <p style={styles.success}>{successMsg}</p>}
+      {errorMsg && <p className={styles.error}>{errorMsg}</p>}
+      {successMsg && <p className={styles.success}>{successMsg}</p>}
 
-      <button onClick={handleSave} style={styles.button} disabled={saving}>
+      <button
+        onClick={handleSave}
+        className={`${styles.button} ${
+          saving || !name.trim() ? styles.buttonDisabled : ""
+        }`}
+        disabled={saving || !name.trim()}
+      >
         {saving ? "Saving..." : "Save Changes"}
       </button>
 
-      <h2 style={{ marginTop: "2rem" }}>Artworks in this Exhibition</h2>
+      <h2 className={styles.artworksHeading}>Artworks in this Exhibition</h2>
 
-      <section style={styles.artworksSection}>
+      <section className={styles.artworksSection}>
         {artworks.length === 0 ? (
           <p>No artworks added to this exhibition yet.</p>
         ) : (
@@ -112,63 +118,3 @@ export default function ExhibitionEditor({
     </div>
   );
 }
-
-// Styles
-
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    padding: "1rem",
-    maxWidth: 800,
-    margin: "0 auto",
-  },
-  heading: {
-    fontSize: "1.8rem",
-    marginBottom: "1rem",
-  },
-  label: {
-    display: "block",
-    marginBottom: "0.25rem",
-    fontWeight: "bold",
-  },
-  input: {
-    width: "100%",
-    padding: "0.5rem",
-    marginBottom: "1rem",
-    fontSize: "1rem",
-    border: "1px solid #ccc",
-    borderRadius: 4,
-  },
-  textarea: {
-    width: "100%",
-    height: 100,
-    padding: "0.5rem",
-    marginBottom: "1rem",
-    fontSize: "1rem",
-    border: "1px solid #ccc",
-    borderRadius: 4,
-    resize: "vertical",
-  },
-  button: {
-    padding: "0.75rem 1.5rem",
-    fontSize: "1rem",
-    backgroundColor: "#0070f3",
-    color: "#fff",
-    border: "none",
-    borderRadius: 4,
-    cursor: "pointer",
-    marginBottom: "1rem",
-  },
-  error: {
-    color: "red",
-    marginBottom: "1rem",
-  },
-  success: {
-    color: "green",
-    marginBottom: "1rem",
-  },
-  artworksSection: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-    gap: "1.5rem",
-  },
-};

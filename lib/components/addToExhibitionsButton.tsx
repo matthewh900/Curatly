@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import styles from "@/styles/favouritesPage.module.css";
 
 interface AddToExhibitionButtonProps {
   favouriteId: string;
@@ -83,7 +84,6 @@ export default function AddToExhibitionButton({
     setModalOpen(false);
   };
 
-  // Close modal after showing success message for 1.5 seconds
   const closeAfterDelay = () => {
     setTimeout(() => {
       closeModal();
@@ -99,18 +99,37 @@ export default function AddToExhibitionButton({
     setSaving(true);
     setMessage(null);
 
-    const { error } = await supabase.from("exhibition_favourites").insert({
-      exhibition_id: selectedExhibitionId,
-      favourite_id: favouriteId,
-    });
+    try {
+      // Get max position in this exhibition
+      const { data: positions, error: posError } = await supabase
+        .from("exhibition_favourites")
+        .select("position")
+        .eq("exhibition_id", selectedExhibitionId)
+        .order("position", { ascending: false })
+        .limit(1);
 
-    setSaving(false);
+      if (posError) throw posError;
 
-    if (error) {
-      setMessage("Failed to add; it might already be in this exhibition.");
-    } else {
+      const nextPosition = positions && positions.length > 0 ? positions[0].position + 1 : 1;
+
+      // Insert with position
+      const { error: insertError } = await supabase.from("exhibition_favourites").insert({
+        exhibition_id: selectedExhibitionId,
+        favourite_id: favouriteId,
+        position: nextPosition,
+      });
+
+      if (insertError) throw insertError;
+
       setMessage("Added to exhibition.");
       closeAfterDelay();
+    } catch (error: any) {
+      setMessage(
+        error.message || "Failed to add; it might already be in this exhibition."
+      );
+      console.error(error);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -123,50 +142,55 @@ export default function AddToExhibitionButton({
     setSaving(true);
     setMessage(null);
 
-    const { data, error } = await supabase
-      .from("exhibitions")
-      .insert({ user_id: userId, name: newExhibitionName.trim() })
-      .select()
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from("exhibitions")
+        .insert({ user_id: userId, name: newExhibitionName.trim() })
+        .select()
+        .single();
 
-    if (error || !data) {
-      setMessage("Failed to create exhibition.");
+      if (error || !data) {
+        throw error || new Error("Failed to create exhibition.");
+      }
+
+      // Insert artwork with position 1 since new exhibition
+      const { error: addError } = await supabase.from("exhibition_favourites").insert({
+        exhibition_id: data.id,
+        favourite_id: favouriteId,
+        position: 1,
+      });
+
+      if (addError) {
+        setMessage("Created exhibition, but failed to add artwork.");
+      } else {
+        setMessage("Created exhibition and added artwork.");
+        setExhibitions((prev) => [data, ...prev]);
+        setSelectedExhibitionId(data.id);
+        setNewExhibitionName("");
+        setCreatingNew(false);
+        closeAfterDelay();
+      }
+    } catch (error: any) {
+      setMessage(error.message || "Failed to create exhibition.");
+      console.error(error);
+    } finally {
       setSaving(false);
-      return;
-    }
-
-    const { error: addError } = await supabase.from("exhibition_favourites").insert({
-      exhibition_id: data.id,
-      favourite_id: favouriteId,
-    });
-
-    setSaving(false);
-
-    if (addError) {
-      setMessage("Created exhibition, but failed to add artwork.");
-    } else {
-      setMessage("Created exhibition and added artwork.");
-      setExhibitions((prev) => [data, ...prev]);
-      setSelectedExhibitionId(data.id);
-      setNewExhibitionName("");
-      setCreatingNew(false);
-      closeAfterDelay();
     }
   };
 
   return (
     <>
-      <button onClick={openModal} style={styles.openButton}>
+      <button onClick={openModal} className={styles.openButton}>
         Add to Exhibition
       </button>
 
       {modalOpen && (
-        <div style={styles.backdrop} aria-modal="true" role="dialog">
-          <div ref={modalRef} style={styles.modal}>
+        <div className={styles.backdrop} aria-modal="true" role="dialog">
+          <div ref={modalRef} className={styles.modal}>
             <button
               onClick={closeModal}
               aria-label="Close modal"
-              style={styles.closeButton}
+              className={styles.closeButton}
             >
               &times;
             </button>
@@ -183,19 +207,30 @@ export default function AddToExhibitionButton({
                   value={newExhibitionName}
                   onChange={(e) => setNewExhibitionName(e.target.value)}
                   disabled={saving}
-                  style={styles.input}
+                  className={styles.input}
                 />
-                <button onClick={handleCreate} disabled={saving} style={styles.button}>
+                <button
+                  onClick={handleCreate}
+                  disabled={saving}
+                  className={styles.button}
+                >
                   {saving ? "Creating..." : "Create & Add"}
                 </button>
-                <button onClick={() => setCreatingNew(false)} disabled={saving} style={styles.button}>
+                <button
+                  onClick={() => setCreatingNew(false)}
+                  disabled={saving}
+                  className={styles.button}
+                >
                   Cancel
                 </button>
               </>
             ) : exhibitions.length === 0 ? (
               <>
                 <p>No exhibitions yet.</p>
-                <button onClick={() => setCreatingNew(true)} style={styles.button}>
+                <button
+                  onClick={() => setCreatingNew(true)}
+                  className={styles.button}
+                >
                   Create New Exhibition
                 </button>
               </>
@@ -205,7 +240,7 @@ export default function AddToExhibitionButton({
                   value={selectedExhibitionId || ""}
                   onChange={(e) => setSelectedExhibitionId(e.target.value)}
                   disabled={saving}
-                  style={styles.select}
+                  className={styles.select}
                 >
                   {exhibitions.map((exh) => (
                     <option key={exh.id} value={exh.id}>
@@ -213,83 +248,27 @@ export default function AddToExhibitionButton({
                     </option>
                   ))}
                 </select>
-                <button onClick={handleAdd} disabled={saving} style={styles.button}>
+                <button
+                  onClick={handleAdd}
+                  disabled={saving}
+                  className={styles.button}
+                >
                   {saving ? "Adding..." : "Add"}
                 </button>
-                <button onClick={() => setCreatingNew(true)} disabled={saving} style={styles.button}>
+                <button
+                  onClick={() => setCreatingNew(true)}
+                  disabled={saving}
+                  className={styles.button}
+                >
                   Create New Exhibition
                 </button>
               </>
             )}
 
-            {message && <p style={styles.message}>{message}</p>}
+            {message && <p className={styles.message}>{message}</p>}
           </div>
         </div>
       )}
     </>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  openButton: {
-    cursor: "pointer",
-  },
-  backdrop: {
-    position: "fixed",
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000,
-  },
-  modal: {
-    backgroundColor: "black",
-    padding: 20,
-    borderRadius: 4,
-    width: 320,
-    maxWidth: "90%",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
-    position: "relative",
-    color: "white",
-  },
-  closeButton: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    border: "none",
-    background: "transparent",
-    fontSize: 20,
-    cursor: "pointer",
-    lineHeight: 1,
-    color: "white",
-  },
-  input: {
-    width: "100%",
-    padding: 8,
-    marginBottom: 10,
-    boxSizing: "border-box",
-    backgroundColor: "#222",
-    border: "1px solid #444",
-    color: "white",
-    borderRadius: 4,
-  },
-  select: {
-    width: "100%",
-    padding: 8,
-    marginBottom: 10,
-    boxSizing: "border-box",
-    backgroundColor: "#222",
-    border: "1px solid #444",
-    color: "white",
-    borderRadius: 4,
-  },
-  button: {
-    cursor: "pointer",
-    marginRight: 8,
-    padding: "6px 12px",
-  },
-  message: {
-    marginTop: 12,
-  },
-};

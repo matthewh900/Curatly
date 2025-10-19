@@ -1,5 +1,3 @@
-// favourites page should fetch items that have been favourited by specific logged in user, should redirect to login page if no logged in user
-// will have the option to add favourited item to users exhibition or remove from favourites
 "use client";
 
 import { useEffect, useState } from "react";
@@ -8,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { FavouritedArtwork } from "@/lib/types/favouritedArtwork";
 import ArtworkCard from "@/lib/components/artworkCard";
 import AddToExhibitionButton from "@/lib/components/addToExhibitionsButton";
+import styles from "@/styles/favouritesPage.module.css"
 
 export default function FavouritesPage() {
   const router = useRouter();
@@ -61,21 +60,15 @@ export default function FavouritesPage() {
   }
 
   return (
-    <main style={{ maxWidth: 700, margin: "2rem auto", padding: "0 1rem" }}>
-      <h1 style={{ textAlign: "center" }}>My Favourites</h1>
+    <main className={styles.main}>
+      <h1 className={styles.title}>My Favourites</h1>
 
       {favourites.length === 0 ? (
-        <p style={{ textAlign: "center" }}>
+        <p className={styles.centerText}>
           You have no favourite artworks yet.
         </p>
       ) : (
-        <section
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-            gap: 15,
-          }}
-        >
+        <section className={styles.grid}>
           {favourites.map((art) => (
             <ArtworkCard key={art.id} artwork={art} userId={userId}>
               {userId && (
