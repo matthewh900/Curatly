@@ -2,7 +2,7 @@
 
 An interactive web application for creating and managing art exhibitions, built with **Next.js** and **Supabase**.
 
-Users can log in, curate exhibitions with artworks from museum APIs, and share them with others. Built with modular, component-based architecture and secure, user-level access.
+Users can log in, favourite artworks from museum APIs, and curate exhibitions from those artworks. Built with modular, component-based architecture and secure, user-level access.
 
 ---
 
