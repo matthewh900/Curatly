@@ -4,6 +4,10 @@ An interactive web application for creating and managing art exhibitions, built 
 
 Users can log in, favourite artworks from museum APIs, and curate exhibitions from those artworks. Built with modular, component-based architecture and secure, user-level access.
 
+## Hosted by Vercel
+
+Visit this link to see the hosted web application: https://curatly.vercel.app/
+
 ---
 
 ## 🚀 Features
