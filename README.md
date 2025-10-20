@@ -23,7 +23,7 @@ Visit this link to see the hosted web application: https://curatly.vercel.app/
 
 ## 🧱 Tech Stack
 
-- **Framework:** Next.js 13+ (App Router)
+- **Framework:** Next.js 15.5.3 (App Router)
 - **Database & Auth:** Supabase
 - **Language:** TypeScript
 - **Styling:** CSS Modules
