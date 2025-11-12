@@ -17,7 +17,7 @@ export async function GET(request: Request) {
     const query = url.searchParams.get("query") || "art";
     const departmentId = url.searchParams.get("departmentId");
     let page = parseInt(url.searchParams.get("page") || "1", 10);
-    const limit = parseInt(url.searchParams.get("limit") || "20", 10);
+    const limit = parseInt(url.searchParams.get("limit") || "21", 10);
     const provider = url.searchParams.get("provider") || "met";
 
     if (page < 1 || limit < 1) {
