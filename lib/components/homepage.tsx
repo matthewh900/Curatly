@@ -28,15 +28,16 @@ export default function HomePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 21;
+  const [canPaginate, setCanPaginate] = useState(true);
 
   // UI State
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Abort controller ref for cancellation
   const abortController = useRef<AbortController | null>(null);
+  const initialLoadDone = useRef(false);
 
-  // Parse URL query params once on mount and sync to state
+  // Parse URL query params on mount
   useEffect(() => {
     const urlQuery = searchParams.get("query") ?? "";
     const urlProvider = searchParams.get("provider") ?? "met";
@@ -45,21 +46,11 @@ export default function HomePage() {
 
     setQuery(decodeURIComponent(urlQuery));
     setProvider(urlProvider === "aic" ? "aic" : "met");
-    setDepartmentId(urlDeptId !== null ? Number(urlDeptId) : null);
+    setDepartmentId(urlDeptId ? Number(urlDeptId) : null);
     setCurrentPage(urlPage ? Number(urlPage) : 1);
-  }, []);
 
-  // Sync state to URL when search is submitted
-  const syncUrl = () => {
-    const params = new URLSearchParams();
-    if (query.trim() !== "")
-      params.set("query", encodeURIComponent(query.trim()));
-    if (provider) params.set("provider", provider);
-    if (provider === "met" && departmentId !== null)
-      params.set("departmentId", departmentId.toString());
-    params.set("page", currentPage.toString());
-    router.replace(`/?${params.toString()}`);
-  };
+    initialLoadDone.current = true;
+  }, []);
 
   // Load departments when provider changes to 'met'
   useEffect(() => {
@@ -82,51 +73,76 @@ export default function HomePage() {
     fetchDepartments();
   }, [provider]);
 
-  // Fetch artworks (only called on search button click)
-  const loadArtworks = async (page = currentPage) => {
+  // Fetch artworks whenever query, provider, department, or page changes
+  useEffect(() => {
+    if (!initialLoadDone.current) return;
+
     if (abortController.current) abortController.current.abort();
-    abortController.current = new AbortController();
+    const controller = new AbortController();
+    abortController.current = controller;
 
-    setLoading(true);
-    setError(null);
+    const fetchArtworks = async () => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const searchTerm = query.trim() || "art"; // default to "art" if empty
-      const params = new URLSearchParams({
-        query: searchTerm,
-        page: page.toString(),
-        limit: itemsPerPage.toString(),
-        provider,
-      });
+      try {
+        const searchTerm = query.trim() || "art";
+        const params = new URLSearchParams({
+          query: searchTerm,
+          page: currentPage.toString(),
+          limit: itemsPerPage.toString(),
+          provider,
+        });
+        if (provider === "met" && departmentId !== null) {
+          params.append("departmentId", departmentId.toString());
+        }
 
-      if (provider === "met" && departmentId !== null) {
-        params.append("departmentId", departmentId.toString());
-      }
+        const res = await fetch(`/api/artworks?${params.toString()}`, {
+          signal: controller.signal,
+        });
 
-      const res = await fetch(`/api/artworks?${params.toString()}`, {
-        signal: abortController.current.signal,
-      });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Unknown error");
+        }
 
-      if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Unknown error");
-      }
+        setArtworks(data.artworks);
+        setTotalPages(data.totalPages);
+        setCurrentPage(data.page);
 
-      const data = await res.json();
-      setArtworks(data.artworks);
-      setTotalPages(data.totalPages);
-      setCurrentPage(data.page);
+        // Sync URL
+        const urlParams = new URLSearchParams();
+        if (query.trim() !== "")
+          urlParams.set("query", encodeURIComponent(query.trim()));
+        urlParams.set("provider", provider);
+        if (provider === "met" && departmentId !== null)
+          urlParams.set("departmentId", departmentId.toString());
+        urlParams.set("page", data.page.toString());
+        router.replace(`/?${urlParams.toString()}`);
 
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (err: any) {
-      if (err.name !== "AbortError") {
-        console.error("Artwork loading error:", err);
-        setError("Failed to load artworks. Please try again.");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } catch (err: any) {
+        if (err.name !== "AbortError") {
+          console.error(err);
+          setError("Failed to load artworks. Please try again.");
+        }
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    fetchArtworks();
+
+    // Cooldown for pagination
+    setCanPaginate(false);
+    const cooldown = setTimeout(() => setCanPaginate(true), 500);
+
+    return () => {
+      controller.abort();
+      clearTimeout(cooldown);
+    };
+  }, [query, provider, departmentId, currentPage]);
 
   // Fetch user profile
   useEffect(() => {
@@ -169,8 +185,11 @@ export default function HomePage() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setCurrentPage(1);
-    syncUrl();
-    loadArtworks(1);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (!canPaginate || newPage < 1 || newPage > totalPages) return;
+    setCurrentPage(newPage);
   };
 
   return (
@@ -271,13 +290,8 @@ export default function HomePage() {
       {totalPages > 1 && (
         <div className={styles.pagination}>
           <button
-            onClick={() => {
-              const newPage = Math.max(1, currentPage - 1);
-              setCurrentPage(newPage);
-              loadArtworks(newPage);
-              syncUrl();
-            }}
-            disabled={currentPage === 1}
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1 || !canPaginate}
             className={styles.button}
             style={{ marginRight: 10 }}
           >
@@ -287,13 +301,8 @@ export default function HomePage() {
             Page {currentPage} of {totalPages}
           </span>
           <button
-            onClick={() => {
-              const newPage = Math.min(totalPages, currentPage + 1);
-              setCurrentPage(newPage);
-              loadArtworks(newPage);
-              syncUrl();
-            }}
-            disabled={currentPage === totalPages}
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages || !canPaginate}
             className={styles.button}
             style={{ marginLeft: 10 }}
           >
