@@ -19,7 +19,10 @@ export default function HomePage() {
 
   // Artworks & Filters
   const [artworks, setArtworks] = useState<UnifiedArtwork[]>([]);
+
   const [query, setQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+
   const [departmentId, setDepartmentId] = useState<number | null>(null);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [provider, setProvider] = useState<"met" | "aic">("met");
@@ -44,7 +47,11 @@ export default function HomePage() {
     const urlDeptId = searchParams.get("departmentId");
     const urlPage = searchParams.get("page");
 
-    setQuery(decodeURIComponent(urlQuery));
+    const decoded = decodeURIComponent(urlQuery);
+
+    setQuery(decoded);
+    setSearchInput(decoded);
+
     setProvider(urlProvider === "aic" ? "aic" : "met");
     setDepartmentId(urlDeptId ? Number(urlDeptId) : null);
     setCurrentPage(urlPage ? Number(urlPage) : 1);
@@ -185,6 +192,7 @@ export default function HomePage() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setCurrentPage(1);
+    setQuery(searchInput);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -228,8 +236,8 @@ export default function HomePage() {
         <input
           type="text"
           placeholder="Search artworks..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
           className={styles.input}
           aria-label="Search artworks"
         />
@@ -297,9 +305,11 @@ export default function HomePage() {
           >
             Previous
           </button>
+
           <span>
             Page {currentPage} of {totalPages}
           </span>
+
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages || !canPaginate}
